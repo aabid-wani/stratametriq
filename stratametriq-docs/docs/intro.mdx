@@ -1,0 +1,40 @@
+---
+sidebar_position: 1
+title: 🌟 Executive Summary
+---
+
+# StrataMetriq: Architecture Intelligence & Pre-Deployment Safety
+
+Welcome to the authoritative engineering guide and user manual for **StrataMetriq**, an enterprise-grade Visual Studio Code extension designed to deliver **Architecture Intelligence & Pre-Deployment Safety** for full-stack JavaScript and TypeScript codebases.
+
+---
+
+## 💡 Why StrataMetriq?
+
+In modern software organizations, engineers frequently grapple with hidden architectural debt, tangled module dependencies, and accidental production leaks (such as exposed API keys, debug logs, or unfinished TODOs). To gain comprehensive visibility, developers typically must stitch together **3 to 4 separate, expensive tools**—such as static code analyzers, secret scanners, dependency visualizers, and duplicate code detectors.
+
+**StrataMetriq** unifies these capabilities into a single, native VS Code experience:
+
+:::tip 360° Architectural Visibility
+Natively maps your entire workspace dependency graph, API routing topology, and database interactions in real time.
+:::
+
+:::note Zero Cloud Exfiltration
+Unlike SaaS code scanners that upload proprietary source code to remote servers, StrataMetriq performs **100% of its Abstract Syntax Tree (AST) parsing and graph calculations locally** on your machine. Your code never leaves your IDE.
+:::
+
+:::info Non-Blocking Performance
+Engineered with highly optimized tokenizers and TypeScript AST evaluators that parse thousands of lines of code in seconds without freezing or slowing down your editor.
+:::
+
+---
+
+## 🚀 Key Highlights
+
+| Feature | Description | Benefit |
+| :--- | :--- | :--- |
+| **🛡️ Pre-Deployment Safety Audit** | Evaluates code against a strict 9-point safety checklist before git commits. | Prevents leaked secrets, debug statements, and broken catch blocks. |
+| **⚡ Risk Impact Analysis** | Calculates downstream ripple effects across APIs, DB tables, and UI views. | Answers *"What breaks if I change this file?"* instantly. |
+| **🌳 Interactive Dependency Explorer** | Generates visual dependency trees with live editor tab synchronization. | Eliminates manual grep hunting across complex monorepos. |
+| **🔀 API Flow Visualizer** | Traces vertical request lifecycles from frontend UI down to DB tables. | Provides end-to-end domain keyword matching without false positives. |
+| **👥 Duplicate Code Detection** | Evaluates Jaccard similarity scores across lexical tokens. | Maintains DRY principles and catches circular import loops early. |
