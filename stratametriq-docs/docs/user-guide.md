@@ -23,6 +23,43 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
 * **🕳️ Empty Catch Blocks:** Identifies swallowed error exceptions where `try { ... } catch (e) {}` blocks contain zero error-handling logic.
 * **📦 Dev & Testing Imports:** Flags production modules that erroneously import development-only packages (e.g., importing `redux-logger` or `@testing-library` inside user-facing components).
 
+### 💡 How It Works: Real-World Code Examples & Zero False-Positive Precision
+
+To ensure developers only spend time fixing real security risks, StrataMetriq's AST heuristic scanner distinguishes between unsafe hardcoded secrets and legitimate runtime configurations:
+
+#### 🔴 What StrataMetriq Flags as a HIGH Severity Risk (Unsafe Code)
+If you accidentally write hardcoded database connection strings, passwords, or API tokens directly into your source code, StrataMetriq catches them in milliseconds before you commit:
+```javascript
+// ❌ HIGH RISK: Hardcoded Database Connection String
+const dbConnection = "mongodb://admin:SuperSecretPassword@localhost:27017/production_db";
+
+// ❌ HIGH RISK: Leaked API Secret or Bearer Token
+const stripeSecretKey = "sk_test_51ExamplePlaceholderSecretKey123456789";
+```
+**In your StrataMetriq Dashboard**, this generates a high-priority risk card showing:
+* **File Name & Path:** `AuthProvider.jsx` (`...\src\components\context`)
+* **Severity & Line Number:** `HIGH [Line 76]`
+* **Exact Risk Description:** `Hardcoded credentials: Hardcoded value found: se...`
+
+#### 🟢 What StrataMetriq Safely Ignores (Safe Code — Zero False Positives)
+Our advanced contextual AST analysis automatically recognizes secure environment variables and standard browser API queries, guaranteeing you are never spammed with false alerts:
+```javascript
+// ✅ SAFE: Dynamic Template Literals & Environment Variables
+const dbConnection = `${process.env.DATABASE_URL}`;
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+
+// ✅ SAFE: Browser Storage Queries & Session Calls
+const userToken = sessionStorage.getItem("auth_token");
+localStorage.setItem("user_preference", "dark_mode");
+```
+
+:::info 📸 Adding a Screenshot to Your Docusaurus Guide
+You can drop your UI screenshot directly into `stratametriq-docs/static/img/secrets-dashboard.png` and render it in this guide using standard markdown:
+```markdown
+![StrataMetriq Secrets Dashboard Preview](/img/secrets-dashboard.png)
+```
+:::
+
 :::tip One-Click Remediation
 Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code!
 :::

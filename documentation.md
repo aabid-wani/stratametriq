@@ -104,6 +104,35 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
 * **🕳️ Empty Catch Blocks:** Identifies swallowed error exceptions where `try { ... } catch (e) {}` blocks contain zero error-handling logic.
 * **📦 Dev & Testing Imports:** Flags production modules that erroneously import development-only packages (e.g., importing `redux-logger` or `@testing-library` inside user-facing components).
 
+#### 💡 How It Works: Real-World Code Examples & Zero False-Positive Precision
+To ensure developers only spend time fixing real security risks, StrataMetriq's AST heuristic scanner distinguishes between unsafe hardcoded secrets and legitimate runtime configurations:
+
+**🔴 What StrataMetriq Flags as a HIGH Severity Risk (Unsafe Code):**
+If you accidentally write hardcoded database connection strings, passwords, or API tokens directly into your source code, StrataMetriq catches them in milliseconds before you commit:
+```javascript
+// ❌ HIGH RISK: Hardcoded Database Connection String
+const dbConnection = "mongodb://admin:SuperSecretPassword@localhost:27017/production_db";
+
+// ❌ HIGH RISK: Leaked API Secret or Bearer Token
+const stripeSecretKey = "sk_test_51ExamplePlaceholderSecretKey123456789";
+```
+**In your StrataMetriq Dashboard**, this generates a high-priority risk card showing:
+* **File Name & Path:** `AuthProvider.jsx` (`...\src\components\context`)
+* **Severity & Line Number:** `HIGH [Line 76]`
+* **Exact Risk Description:** `Hardcoded credentials: Hardcoded value found: se...`
+
+**🟢 What StrataMetriq Safely Ignores (Safe Code — Zero False Positives):**
+Our advanced contextual AST analysis automatically recognizes secure environment variables and standard browser API queries, guaranteeing you are never spammed with false alerts:
+```javascript
+// ✅ SAFE: Dynamic Template Literals & Environment Variables
+const dbConnection = `${process.env.DATABASE_URL}`;
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+
+// ✅ SAFE: Browser Storage Queries & Session Calls
+const userToken = sessionStorage.getItem("auth_token");
+localStorage.setItem("user_preference", "dark_mode");
+```
+
 **💡 How to use:**
 * Look at the top status banner: glowing **`✅ Ready for Production`** indicates zero critical risks, whereas a high-alert **`⛔ DO NOT DEPLOY`** warns of active vulnerabilities.
 * Click filter buttons (`🔑 Secrets`, `🐞 Debug Code`, `📌 TODOs`, etc.) to isolate specific risk categories.
