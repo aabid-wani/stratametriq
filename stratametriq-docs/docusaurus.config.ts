@@ -73,7 +73,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://github.com/example/stratometriq',
+          href: 'https://github.com/aabid-wani/stratametriq',
           label: 'GitHub',
           position: 'right',
         },
@@ -117,7 +117,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Repository',
-              href: 'https://github.com/example/stratometriq',
+              href: 'https://github.com/aabid-wani/stratametriq',
             },
           ],
         },

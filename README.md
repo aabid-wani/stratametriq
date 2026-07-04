@@ -1,6 +1,9 @@
 # StrataMetriq 📐
 *Architecture Intelligence & Pre-Deployment Safety in VS Code*
 
+[![GitHub](https://img.shields.io/badge/GitHub-aabid--wani%2Fstratametriq-181717?style=flat&logo=github)](https://img.shields.io/badge/GitHub-aabid--wani%2Fstratametriq-181717?style=flat&logo=github) [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-stratometriq-007ACC?style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/)  
+**🌐 Official GitHub Repository:** [https://github.com/aabid-wani/stratametriq](https://github.com/aabid-wani/stratametriq)
+
 **StrataMetriq** is an enterprise-grade VS Code extension designed to act as an advanced architectural diagnostic tool for full-stack JavaScript and TypeScript codebases. It transforms abstract technical debt into visual graphs, maps out end-to-end API request lifecycles, and automatically enforces a strict pre-deployment safety audit before code ever reaches production.
 
 ---
