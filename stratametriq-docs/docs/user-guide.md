@@ -53,12 +53,10 @@ const userToken = sessionStorage.getItem("auth_token");
 localStorage.setItem("user_preference", "dark_mode");
 ```
 
-:::info 📸 Adding a Screenshot to Your Docusaurus Guide
-You can drop your UI screenshot directly into `stratametriq-docs/static/img/secrets-dashboard.png` and render it in this guide using standard markdown:
-```markdown
+#### 📸 Secrets Detection in the Interactive Dashboard
+When StrataMetriq identifies hardcoded credentials or API tokens, it immediately surfaces them in the **Secrets** filter view with exact line numbers and risk ratings:
+
 ![StrataMetriq Secrets Dashboard Preview](/img/secrets-dashboard.png)
-```
-:::
 
 :::tip One-Click Remediation
 Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code!

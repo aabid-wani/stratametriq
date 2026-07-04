@@ -133,6 +133,11 @@ const userToken = sessionStorage.getItem("auth_token");
 localStorage.setItem("user_preference", "dark_mode");
 ```
 
+**📸 Secrets Detection in the Interactive Dashboard:**
+When StrataMetriq identifies hardcoded credentials or API tokens, it immediately surfaces them in the **Secrets** filter view with exact line numbers and risk ratings:
+
+![StrataMetriq Secrets Dashboard Preview](./secrets-dashboard.png)
+
 **💡 How to use:**
 * Look at the top status banner: glowing **`✅ Ready for Production`** indicates zero critical risks, whereas a high-alert **`⛔ DO NOT DEPLOY`** warns of active vulnerabilities.
 * Click filter buttons (`🔑 Secrets`, `🐞 Debug Code`, `📌 TODOs`, etc.) to isolate specific risk categories.
