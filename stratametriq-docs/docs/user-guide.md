@@ -14,6 +14,22 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
 
 * **🔑 Hardcoded Credentials:** Catches leaked API keys, AWS secrets, JWTs, bearer tokens, passwords, database connection strings (`mongodb://`, `postgres://`, `mysql://`), localhost URLs, and hardcoded IPs. 
   * *Zero False-Positive Precision:* Advanced heuristic algorithms automatically ignore dynamic template strings (`${process.env.API_KEY}`) and safe browser storage queries (`sessionStorage.getItem("token")`).
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ HIGH RISK: Hardcoded Database Connection String & Secret Token
+  const dbConnection = "mongodb://admin:SuperSecretPassword@localhost:27017/production_db";
+  const stripeSecretKey = "sk_test_51ExamplePlaceholderSecretKey123456789";
+
+  // ✅ SAFE (Zero False Positives): Dynamic Environment Variables & Session Queries
+  const secureDbUrl = `${process.env.DATABASE_URL}`;
+  const userToken = sessionStorage.getItem("auth_token");
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq instantly highlights the exact file (`AuthProvider.jsx`), line number (`HIGH [Line 76]`), and risk preview in your Secrets view:
+  
+  ![StrataMetriq Secrets Dashboard Preview](/img/secrets-dashboard.png)
+
 * **🐞 Debug Code:** Detects active logging and debugging breakpoints (`console.log`, `console.debug`, `console.warn`, `console.error`, `debugger;`, `alert()`, `confirm()`, and Redux devtools hooks).
 * **🚧 Temporary Code:** Flags developer hacks and temporary workarounds marked with comments containing `TEMP`, `HACK`, `XXX`, `WIP`, `@temporary`, `remove this`, or `delete this`.
 * **🧪 Test Code & Test Data:** Prevents test suites (`describe`, `it`, `test`, `expect`), mocking frameworks (`jest`, `sinon`, `faker`, `nock`), and mock data fixtures (`mockData`, `testData`, `dummyData`) from leaking into production bundles.
@@ -22,41 +38,6 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
 * **⚰️ Dead Code:** Detects unreachable statements after `return`/`throw`/`break`, explicit unused code annotations, and hardcoded dead conditionals like `if (false)` or `while (0)`.
 * **🕳️ Empty Catch Blocks:** Identifies swallowed error exceptions where `try { ... } catch (e) {}` blocks contain zero error-handling logic.
 * **📦 Dev & Testing Imports:** Flags production modules that erroneously import development-only packages (e.g., importing `redux-logger` or `@testing-library` inside user-facing components).
-
-### 💡 How It Works: Real-World Code Examples & Zero False-Positive Precision
-
-To ensure developers only spend time fixing real security risks, StrataMetriq's AST heuristic scanner distinguishes between unsafe hardcoded secrets and legitimate runtime configurations:
-
-#### 🔴 What StrataMetriq Flags as a HIGH Severity Risk (Unsafe Code)
-If you accidentally write hardcoded database connection strings, passwords, or API tokens directly into your source code, StrataMetriq catches them in milliseconds before you commit:
-```javascript
-// ❌ HIGH RISK: Hardcoded Database Connection String
-const dbConnection = "mongodb://admin:SuperSecretPassword@localhost:27017/production_db";
-
-// ❌ HIGH RISK: Leaked API Secret or Bearer Token
-const stripeSecretKey = "sk_test_51ExamplePlaceholderSecretKey123456789";
-```
-**In your StrataMetriq Dashboard**, this generates a high-priority risk card showing:
-* **File Name & Path:** `AuthProvider.jsx` (`...\src\components\context`)
-* **Severity & Line Number:** `HIGH [Line 76]`
-* **Exact Risk Description:** `Hardcoded credentials: Hardcoded value found: se...`
-
-#### 🟢 What StrataMetriq Safely Ignores (Safe Code — Zero False Positives)
-Our advanced contextual AST analysis automatically recognizes secure environment variables and standard browser API queries, guaranteeing you are never spammed with false alerts:
-```javascript
-// ✅ SAFE: Dynamic Template Literals & Environment Variables
-const dbConnection = `${process.env.DATABASE_URL}`;
-const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-
-// ✅ SAFE: Browser Storage Queries & Session Calls
-const userToken = sessionStorage.getItem("auth_token");
-localStorage.setItem("user_preference", "dark_mode");
-```
-
-#### 📸 Secrets Detection in the Interactive Dashboard
-When StrataMetriq identifies hardcoded credentials or API tokens, it immediately surfaces them in the **Secrets** filter view with exact line numbers and risk ratings:
-
-![StrataMetriq Secrets Dashboard Preview](/img/secrets-dashboard.png)
 
 :::tip One-Click Remediation
 Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code!
