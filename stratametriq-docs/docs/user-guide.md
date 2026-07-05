@@ -115,8 +115,67 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
   ![StrataMetriq Commented Code Dashboard Preview](/img/commented-code-dashboard.png)
 
 * **⚰️ Dead Code:** Detects unreachable statements after `return`/`throw`/`break`, explicit unused code annotations, and hardcoded dead conditionals like `if (false)` or `while (0)`.
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ MEDIUM RISK: Unreachable Statements & Hardcoded Dead Conditionals
+  function processOrder(order) {
+    return order.total;
+    console.log("This unreachable dead code will never execute!"); // Flagged!
+  }
+  if (false) { initLegacyBackup(); } // Hardcoded dead branch!
+
+  // ✅ SAFE: Active Branching & Reachable Logic
+  function calculateTotal(price, tax) {
+    if (price <= 0) return 0;
+    return price + tax;
+  }
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq indexes dead code assertions like in `AssetReport.jsx` (`MEDIUM [Line 49] Dead code: Dead code detected...`) under the **Dead Code** tab:
+  
+  ![StrataMetriq Dead Code Dashboard Preview](/img/dead-code-dashboard.png)
+
 * **🕳️ Empty Catch Blocks:** Identifies swallowed error exceptions where `try { ... } catch (e) {}` blocks contain zero error-handling logic.
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ MEDIUM RISK: Swallowed Exception with Zero Error Handling
+  try {
+    await syncUserDatabase();
+  } catch (e) {
+    // Empty catch! Silent failure hides critical bugs in production!
+  }
+
+  // ✅ SAFE: Proper Exception Handling & Error Reporting
+  try {
+    await syncUserDatabase();
+  } catch (error) {
+    logger.error("Database sync failed:", error);
+    notifyMonitoringService(error);
+  }
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq highlights swallowed error exceptions in `AssetReport.jsx` (`MEDIUM [Line 77] Empty catch blocks: Swallowed exception...`) under the **Empty Catch** tab:
+  
+  ![StrataMetriq Empty Catch Dashboard Preview](/img/empty-catch-dashboard.png)
+
 * **📦 Dev & Testing Imports:** Flags production modules that erroneously import development-only packages (e.g., importing `redux-logger` or `@testing-library` inside user-facing components).
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ MEDIUM RISK: Development & Testing Packages Imported in User-Facing Bundle
+  import { createLogger } from "redux-logger"; // Bloats production bundle!
+  import { render, screen } from "@testing-library/react"; // Dev dependency!
+
+  // ✅ SAFE: Clean Production Imports Only
+  import { configureStore } from "@reduxjs/redux-toolkit";
+  import React, { useState, useEffect } from "react";
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq identifies erroneous development package imports in files like `setupTests.jsx` (`[Line 1]`) and `App.test.jsx` (`[Line 1]`) under the **Dev Imports** tab:
+  
+  ![StrataMetriq Dev Imports Dashboard Preview](/img/dev-imports-dashboard.png)
 
 :::tip One-Click Remediation
 Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code!
