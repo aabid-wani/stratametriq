@@ -311,15 +311,46 @@ StrataMetriq calculates architectural health using transparent, deterministic fo
   * At an average of 10 imports per file (`10 × 2 = 20` penalty → **80% health**), developers receive a mild structural warning.
   * At an average of 25 imports per file (`25 × 2 = 50` penalty → **50% health**), the system correctly alerts teams to tight coupling and monolithic "god files" that urgently need refactoring!
 
-**🏆 Why StrataMetriq is Superior to Other Tools for Health Analysis:**
-Why rely on StrataMetriq instead of standard linters (ESLint), code quality scanners (SonarQube), or dependency checkers (Webpack/Madge)?
-1. **Real-Time AST Coupling vs. Surface Linting:** Standard linters only check syntax formatting or missing semicolons on a single-file basis. StrataMetriq constructs a multi-layer **AST Graph** across the entire workspace to measure structural coupling, circular import loops, and downstream blast radii (*"If I change this file, what breaks?"*).
-2. **Zero-Config Editor Integration (No CI/CD Required):** Unlike SonarQube or SaaS platforms that force you to push code, wait for CI pipelines, and open external web dashboards, StrataMetriq runs locally and instantly inside VS Code as you type!
-3. **Pre-Deployment Safety Guardrails:** While traditional tools overwhelm developers with hundreds of generic code smells, StrataMetriq specifically isolates critical deployment risks (leaked secrets, active `debugger` breakpoints, swallowed error catch blocks, and dead commented code) with zero false-positive precision.
-4. **Full-Stack End-to-End API Tracing:** Traditional tools analyze frontend and backend codebases in silos. StrataMetriq traces the full vertical lifecycle of an HTTP request from a React UI trigger → Axios client → Express route → Controller → Database table in one unified view.
-5. **100% Local & Private:** All AST parsing and Jaccard similarity algorithms run directly in your machine's local memory. Your proprietary source code is never transmitted to third-party servers or cloud AI endpoints!
-
 **📸 Interactive Dashboard Preview:**
 Notice how these gauges give you an immediate high-level summary before diving into granular file inspections:
 
 ![StrataMetriq Architectural Health and Complexity Metrics Dashboard Preview](/img/architectural-health-metrics.png)
+
+---
+
+## 7. 🥊 Competitive Market Comparison (Why StrataMetriq?)
+While established static analysis and dependency tools exist in the market, they often operate in silos—forcing development teams to juggle multiple SaaS dashboards, CLI scripts, and CI/CD pipelines. **StrataMetriq** unites structural AST graph intelligence, full-stack API tracing, and zero false-positive pre-deployment safety directly inside VS Code.
+
+### 📊 Feature Matrix: StrataMetriq vs. Industry Alternatives
+
+| Feature / Capability | **⚡ StrataMetriq** | **SonarQube** | **CodeScene** | **NDepend** | **Dependency Cruiser / Madge** |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Primary Environment** | **Real-Time VS Code IDE** | External SaaS / CI Server | External SaaS Dashboard | Visual Studio / Windows CLI | Node.js Terminal CLI |
+| **Setup & Configuration** | **Zero-Config (Instant)** | Heavy CI/CD Pipeline & Server Setup | Git Repo Synchronization | Complex Project XML Setup | Custom Rules Scripting (.js/.json) |
+| **Pre-Deployment Guardrails** | **✅ Yes (Zero False-Positive Heuristics)** | ❌ No (Siloed General Code Smells) | ❌ No (Focuses on Git Churn) | ❌ No (.NET Metrics Focus) | ❌ No (Only Checks Import Rules) |
+| **Full-Stack API Flow Tracing** | **✅ Yes (React ➔ HTTP ➔ Route ➔ DB)** | ❌ No (Language Siloed) | ❌ No (Language Siloed) | ❌ No (.NET Ecosystem Only) | ❌ No (Frontend/JS Module Links Only) |
+| **Downstream Ripple Impact** | **✅ Yes (Files, APIs, Components, DB)** | ⚠️ Limited (File Level Only) | ⚠️ Limited (File Level Only) | ✅ Yes (.NET Assemblies) | ⚠️ Limited (Direct Module Dependents) |
+| **Duplicate Logic Detection** | **✅ Yes (AST Jaccard Similarity + Refactor Tips)** | ✅ Yes (Basic Token Matching) | ⚠️ Limited (Code Redundancy via Churn) | ✅ Yes (.NET Only) | ❌ No |
+| **Circular Dependency Loops** | **✅ Yes (Visual DFS Highlights & Editor Links)** | ⚠️ Limited (Project Level) | ❌ No | ✅ Yes (.NET Assemblies) | ✅ Yes (CLI Graph Output) |
+| **Data Privacy & Telemetry** | **100% Local & Private (Zero Cloud Leaks)** | Cloud SaaS or On-Prem Server Required | Cloud SaaS or On-Prem Server Required | Windows Desktop License Required | Local Terminal CLI |
+| **Target Ecosystems** | **Full-Stack (TS, JS, React, Node, Python, C#, etc.)** | Multi-Language | Multi-Language | **.NET / C# Only** | **JS / TS / Node Only** |
+
+---
+
+### 🔍 Deep-Dive Competitor Breakdown
+
+#### 1. StrataMetriq vs. SonarQube
+* **The Problem with SonarQube:** SonarQube is built for centralized CI/CD pipelines and DevOps compliance teams. It requires setting up dedicated servers, writing YAML configurations, and pushing code before developers can see results on an external web dashboard. It overwhelms teams with thousands of generic, low-priority "code smells."
+* **The StrataMetriq Advantage:** StrataMetriq acts as an instant architectural copilot inside VS Code. It runs real-time AST analysis locally in memory as you type, isolating high-severity **Pre-Deployment Risks** (leaked AWS secrets, active debuggers, empty catch blocks) with zero false-positive precision without ever leaving your editor.
+
+#### 2. StrataMetriq vs. CodeScene
+* **The Problem with CodeScene:** CodeScene focuses heavily on behavioral code analysis by analyzing Git version control history and contributor churn to find hotspots. It does not provide real-time AST structural import graphs or full-stack request tracing.
+* **The StrataMetriq Advantage:** Rather than looking backward at Git commit history, StrataMetriq analyzes your **live AST code structure** in real time. It calculates exact downstream ripple impacts (*"If I modify this function today, which 14 React components and 3 API routes will break?"*).
+
+#### 3. StrataMetriq vs. NDepend (.NET)
+* **The Problem with NDepend:** NDepend is a powerful structural static analysis tool, but it is strictly locked into the Microsoft Visual Studio and **.NET / C# ecosystem**. It comes with a steep learning curve and expensive enterprise licensing.
+* **The StrataMetriq Advantage:** StrataMetriq is built for modern, heterogeneous **Full-Stack Polyglot repositories** (TypeScript, JavaScript, React, Node.js, Python, Go, Java, C#, etc.), providing intuitive visual graphs and instant VS Code navigation at a fraction of the complexity.
+
+#### 4. StrataMetriq vs. Dependency Cruiser & Madge
+* **The Problem with Madge / Dependency Cruiser:** While these are excellent open-source command-line tools for finding circular dependencies in Node.js/TypeScript projects, they are terminal-bound CLI utilities. They output static SVG/DOT images or terminal logs, requiring manual script configuration and rules parsing.
+* **The StrataMetriq Advantage:** StrataMetriq transforms static graph data into an **interactive, clickable visual dashboard**. Clicking any circular loop warning or dependency node immediately jumps straight to the exact file and line number in your active VS Code editor tab! Furthermore, Madge and Dependency Cruiser cannot trace full-stack HTTP request lifecycles or detect pre-deployment secret leaks.
