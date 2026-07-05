@@ -354,3 +354,18 @@ While established static analysis and dependency tools exist in the market, they
 #### 4. StrataMetriq vs. Dependency Cruiser & Madge
 * **The Problem with Madge / Dependency Cruiser:** While these are excellent open-source command-line tools for finding circular dependencies in Node.js/TypeScript projects, they are terminal-bound CLI utilities. They output static SVG/DOT images or terminal logs, requiring manual script configuration and rules parsing.
 * **The StrataMetriq Advantage:** StrataMetriq transforms static graph data into an **interactive, clickable visual dashboard**. Clicking any circular loop warning or dependency node immediately jumps straight to the exact file and line number in your active VS Code editor tab! Furthermore, Madge and Dependency Cruiser cannot trace full-stack HTTP request lifecycles or detect pre-deployment secret leaks.
+
+---
+
+## 8. 🔒 Licensing, Privacy & Marketplace Distribution Policy
+StrataMetriq is distributed as a publicly available extension on the official **Microsoft Visual Studio Code Marketplace**, while maintaining a proprietary, closed-source core repository. This dual architecture ensures maximum accessibility for individual developers alongside enterprise-grade intellectual property protection.
+
+### 🌟 Why We Use a Private Repository & Closed-Source Model
+1. **Zero Tampering & Enterprise Security:** By keeping our core AST parser, Jaccard similarity algorithms, and heuristic risk engines in a secure, private GitHub repository, we guarantee that the official extension binary distributed on the VS Code Marketplace is 100% authentic, tamper-proof, and free from malicious third-party code injections.
+2. **Local Privacy Guarantee:** Even though the source code is proprietary, **your source code never leaves your machine.** All AST parsing, structural dependency graph calculations, and pre-deployment risk audits execute entirely within your local VS Code memory process. No telemetry or proprietary code snippets are ever transmitted to external cloud servers.
+3. **Sustainable Professional Development:** Protecting our intellectual property prevents unauthorized rebranding or commercial repackaging by third-party corporations. This allows us to offer the local analysis extension **100% free for individual developers** while building sustainable, dedicated enterprise features for engineering teams.
+
+### 🤝 Community Feedback & Support
+While our core backend repository is private, we believe in radical transparency and community collaboration:
+* **Public Documentation:** Our complete Docusaurus handbook, real-world architecture examples, and mathematical formulas are publicly accessible.
+* **Feature Requests & Bug Reporting:** We maintain a public community tracker where developers can report bugs, request new heuristics, and vote on upcoming roadmap features.
