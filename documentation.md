@@ -361,10 +361,22 @@ In your dashboard, duplicate files are ranked by percentage match alongside tigh
 ---
 
 ### 4.6 Architectural Health & Complexity Metrics
-Monitor overall repository maintainability through three core health gauges:
-* **Project Health Score (0% - 100%):** A holistic score calculated by evaluating dependency coupling density, duplicate code ratios, syntax error frequencies, and pre-deployment risk severity.
-* **Complexity Index:** Measures the average number of imports and dependencies per file, alerting you to tangled spaghetti code before it becomes unmaintainable.
-* **Graph Overview:** Displays the total number of workspace files mapped, total cross-module edges discovered, and total database tables identified.
+Monitor overall repository maintainability through three core high-level health gauges located at the top of your workspace dashboard. Click the glowing **`⚡ Run Deep Analysis`** button at any time to re-index your workspace.
+
+* **Project Health Score (0% - 100%):** Evaluated from coupling density, duplicate code ratios, syntax error frequencies, and pre-deployment risk severity.
+* **Complexity Index:** Measures the average number of imports and dependencies per file across the repository.
+* **Graph Overview:** Displays total workspace files mapped and total cross-module import edges discovered.
+
+**💡 Real-World Metric Breakdown Example:**
+When StrataMetriq scans a medium-sized full-stack repository, it computes concrete metrics to give you an instant architectural pulse:
+* **`91%` Project Health:** Indicates an exceptionally clean codebase with minimal circular loops or critical pre-deployment risks.
+* **`4.33` Complexity Index:** Means each module imports an average of ~4.3 dependencies—a healthy ratio indicating well-decoupled, modular components (indices > 10 warn of monolithic "god files").
+* **`609` Files Mapped & `2639` Imports Found:** Shows the exact scale of the AST structural dependency graph constructed by the scanner.
+
+**📸 Interactive Dashboard Preview:**
+Notice how these gauges give you an immediate high-level summary before diving into granular file inspections:
+
+![StrataMetriq Architectural Health and Complexity Metrics Dashboard Preview](./architectural-health-metrics.png)
 
 ---
 
