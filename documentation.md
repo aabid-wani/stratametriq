@@ -390,26 +390,15 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
   
   ![StrataMetriq Dev Imports Dashboard Preview](./dev-imports-dashboard.png)
 
-#### 💡 Extensibility & Custom Rule Roadmap (Adding New Features & Keywords)
-A frequent question from enterprise engineering teams is: *"Can we check for additional features, company-specific keywords, or custom security rules beyond the standard 9-point checklist?"* **The answer is YES!**
-
-StrataMetriq is built on an extensible, modular AST heuristic rule engine. Rather than hardcoding static regex checks, each security check is a self-contained rule object. This allows us (or enterprise teams) to seamlessly plug in custom keywords, compliance heuristics, or brand-new safety scanners without modifying the core parser!
-
-##### 🚀 Top Potential Features & Keywords Available for Next-Gen Releases:
-| Proposed Rule / Suite | Target Keywords & AST Patterns | Enterprise Value & Why It's Needed |
-| :--- | :--- | :--- |
-| **🔐 Insecure Cryptography** | `crypto.createHash('md5')`, `sha1`, `des`, `Math.random()` for auth tokens | Prevents broken encryption algorithms and weak hashing that can be cracked in seconds. |
-| **💉 SQL / NoSQL Injection** | Raw string concat in queries: `"SELECT * FROM users WHERE id = '" + id` | Stops database destruction and unauthorized data exfiltration before deployment. |
-| **🌐 Unsanitized DOM (XSS)** | `dangerouslySetInnerHTML`, `eval()`, `setTimeout("string")`, `document.write()` | Eliminates Cross-Site Scripting (XSS) risks that steal user session cookies. |
-| **🐢 Memory Leaks (SPAs)** | Uncleaned `window.addEventListener()`, `setInterval()`, or `socket.on()` in `useEffect` | Prevents browser lag, memory bloat, and application crashes in React SPAs over time. |
-| **🛑 Hardcoded Magic URLs** | Raw HTTP/IP endpoints (`http://api.staging.internal/v1` or `192.168.1.50`) | Forces teams to centralize API endpoints and environment variables in clean config files. |
-| **⚡ Synchronous Blocking** | Node.js blocking calls: `fs.readFileSync()`, `fs.writeFileSync()` inside Express routes | Prevents synchronous file operations from freezing the Node.js event loop during high traffic. |
-| **🔐 CORS Misconfigurations** | Permissive wildcard origins `cors({ origin: '*' })` or disabled CSRF protections | Secures API endpoints against unauthorized cross-origin API hijacking. |
+> [!TIP]
+> **🔮 Want to Check for More Features or Custom Keywords?**
+> Yes! You can easily add unlimited custom rules (such as **Insecure Cryptography**, **SQL Injection**, **XSS Risks**, **Memory Leaks**, or company-specific keywords) to StrataMetriq's modular engine! 
+> 👉 **[See Section 9: Extensibility & Custom Rule Roadmap](#9--extensibility--custom-rule-roadmap-adding-new-features--keywords)** below for the complete table of 7 enterprise security suites available for your project!
 
 **💡 How to use:**
 * Look at the top status banner: glowing **`✅ Ready for Production`** indicates zero critical risks, whereas a high-alert **`⛔ DO NOT DEPLOY`** warns of active vulnerabilities.
 * Click filter buttons (`🔑 Secrets`, `🐞 Debug Code`, `📌 TODOs`, etc.) to isolate specific risk categories.
-* **One-Click Remediation:** Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code! Have a custom keyword you need audited? Our heuristic rule array can be extended in seconds!
+* **One-Click Remediation:** Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code!
 
 ---
 
@@ -731,7 +720,38 @@ Our scanner utilizes contextual AST evaluation rather than simple regex matching
 
 ---
 
-## 9. Repository & Package File Reference
+## 9. 🔮 Extensibility & Custom Rule Roadmap (Adding New Features & Keywords)
+A frequent question from enterprise engineering teams is: *"Can we check for additional features, company-specific keywords, or custom security rules beyond the standard 9-point checklist?"* **The answer is YES!**
+
+StrataMetriq is built on an extensible, modular AST heuristic rule engine. Rather than hardcoding static regex checks, each security check is a self-contained rule object. This allows us (or enterprise teams) to seamlessly plug in custom keywords, compliance heuristics, or brand-new safety scanners without modifying the core parser!
+
+### 🚀 Top Potential Features & Keywords Available for Next-Gen Releases:
+| Proposed Rule / Suite | Target Keywords & AST Patterns | Enterprise Value & Why It's Needed |
+| :--- | :--- | :--- |
+| **🔐 Insecure Cryptography** | `crypto.createHash('md5')`, `sha1`, `des`, `Math.random()` for auth tokens | Prevents broken encryption algorithms and weak hashing that can be cracked in seconds. |
+| **💉 SQL / NoSQL Injection** | Raw string concat in queries: `"SELECT * FROM users WHERE id = '" + id` | Stops database destruction and unauthorized data exfiltration before deployment. |
+| **🌐 Unsanitized DOM (XSS)** | `dangerouslySetInnerHTML`, `eval()`, `setTimeout("string")`, `document.write()` | Eliminates Cross-Site Scripting (XSS) risks that steal user session cookies. |
+| **🐢 Memory Leaks (SPAs)** | Uncleaned `window.addEventListener()`, `setInterval()`, or `socket.on()` in `useEffect` | Prevents browser lag, memory bloat, and application crashes in React SPAs over time. |
+| **🛑 Hardcoded Magic URLs** | Raw HTTP/IP endpoints (`http://api.staging.internal/v1` or `192.168.1.50`) | Forces teams to centralize API endpoints and environment variables in clean config files. |
+| **⚡ Synchronous Blocking** | Node.js blocking calls: `fs.readFileSync()`, `fs.writeFileSync()` inside Express routes | Prevents synchronous file operations from freezing the Node.js event loop during high traffic. |
+| **🔐 CORS Misconfigurations** | Permissive wildcard origins `cors({ origin: '*' })` or disabled CSRF protections | Secures API endpoints against unauthorized cross-origin API hijacking. |
+
+### 🛠️ How Custom Rules Work in Architecture:
+Because StrataMetriq's `@stratometriq/scanner` module decouples file reading from token evaluation, adding a custom rule simply requires appending a rule schema to the scanner pipeline:
+```typescript
+// Example: Adding a custom security rule for MD5/SHA1 detection
+const customCryptoRule = {
+  id: "insecure-crypto",
+  severity: "HIGH",
+  description: "Detected weak cryptographic hash function (MD5/SHA1)",
+  pattern: /crypto\.createHash\(['"](md5|sha1)['"]\)/i
+};
+```
+When caught, StrataMetriq will instantly highlight the custom vulnerability inside your interactive dashboard with one-click VS Code remediation!
+
+---
+
+## 10. Repository & Package File Reference
 
 * **Workspace Root Config:** [`package.json`](file:///d:/codeVision/package.json)
 * **Extension Package Manifest:** [`extension/package.json`](file:///d:/codeVision/extension/package.json)
