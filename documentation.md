@@ -373,6 +373,29 @@ When StrataMetriq scans a medium-sized full-stack repository, it computes concre
 * **`4.33` Complexity Index:** Means each module imports an average of ~4.3 dependencies—a healthy ratio indicating well-decoupled, modular components (indices > 10 warn of monolithic "god files").
 * **`609` Files Mapped & `2639` Imports Found:** Shows the exact scale of the AST structural dependency graph constructed by the scanner.
 
+**📐 How the Health Score is Calculated (Exact Mathematical Formula):**
+StrataMetriq calculates architectural health using transparent, deterministic formulas evaluated directly from your AST dependency graph:
+
+1. **Workspace Project Health Formula (Top Dashboard Gauge):**
+   First, StrataMetriq calculates the repository's **Complexity Index** (the average number of imports per file):
+   ```text
+   Complexity Index = Total Imports (Edges) ÷ Total Files Mapped (Nodes)
+   ```
+   Then, it maps this complexity directly into an overall percentage score bounded between **10%** and **100%**:
+   ```text
+   Project Health Score = MAX( 10% , MIN( 100% , 100 - (Complexity Index × 2) ) )
+   ```
+   *(Example: With `2639` imports across `609` files, the complexity index is `2639 ÷ 609 = 4.33`. The score is `100 - (4.33 × 2) = 91.34%` → **`91%`**!)*
+
+2. **Individual Module Health Formula (Inspection Drawer & File Cards):**
+   When inspecting an individual file, StrataMetriq evaluates its granular internal AST structure:
+   ```text
+   Module Complexity Score = MIN( 100 , Functions + (2 × Outgoing Imports) + (1.5 × Components Used) + (3 × API Calls) )
+
+   Module Health Score = MAX( 10% , MIN( 100% , 100 - (10 × Syntax/Lint Errors) - (0.5 × Module Complexity Score) ) )
+   ```
+   *(Note: Each syntax error or unresolved lint problem reduces a file's health by **10%**, while excessive API calls and outgoing dependencies gradually weigh down the score to encourage decoupling).*
+
 **📸 Interactive Dashboard Preview:**
 Notice how these gauges give you an immediate high-level summary before diving into granular file inspections:
 
