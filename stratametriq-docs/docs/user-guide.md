@@ -31,10 +31,89 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
   ![StrataMetriq Secrets Dashboard Preview](/img/secrets-dashboard.png)
 
 * **🐞 Debug Code:** Detects active logging and debugging breakpoints (`console.log`, `console.debug`, `console.warn`, `console.error`, `debugger;`, `alert()`, `confirm()`, and Redux devtools hooks).
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ HIGH RISK: Active Logging & Debug Breakpoints Leaking to Production
+  console.log("User payment payload:", paymentData);
+  debugger;
+
+  // ✅ SAFE (Zero False Positives): Standard Error Logging / Handled Exceptions
+  logger.error("Failed to process payment", { error: err.message });
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq flags the exact files (`Module.jsx`, `CreatePermission.jsx`) and line numbers (`[Line 39]`, `[Line 28]`) in the **Debug Code** tab:
+  
+  ![StrataMetriq Debug Code Dashboard Preview](/img/debug-code-dashboard.png)
+
 * **🚧 Temporary Code:** Flags developer hacks and temporary workarounds marked with comments containing `TEMP`, `HACK`, `XXX`, `WIP`, `@temporary`, `remove this`, or `delete this`.
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ HIGH RISK: Unfinished Hack or Temporary Workaround
+  // HACK: Bypass auth validation temporarily for demo
+  if (user.isDemo) return true; // WIP: remove this before launch
+
+  // ✅ SAFE: Proper Architecture & Standard Documentation Comments
+  // Validates user authorization against the JWT claims
+  if (!user.isAuthenticated) throw new UnauthorizedError();
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq highlights the hack annotation in `AddOrder.jsx` (`HIGH [Line 332] Temporary code: Found temporary / hack / WIP...`) under the **Temp Code** tab:
+  
+  ![StrataMetriq Temp Code Dashboard Preview](/img/temp-code-dashboard.png)
+
 * **🧪 Test Code & Test Data:** Prevents test suites (`describe`, `it`, `test`, `expect`), mocking frameworks (`jest`, `sinon`, `faker`, `nock`), and mock data fixtures (`mockData`, `testData`, `dummyData`) from leaking into production bundles.
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ HIGH RISK: Mock Data Fixtures / Test Suites Imported in Production Code
+  const dummyData = [{ id: 1, name: "Test User 99", creditCard: "4111-1111-..." }];
+  import { mockStripeClient } from "./__mocks__/stripe";
+
+  // ✅ SAFE: Real Production API Connectors & Verified Data Models
+  const activeUsers = await db.users.findMany({ where: { status: "ACTIVE" } });
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq catches test files and mock fixtures like `setupTests.jsx` (`[Line 1]`) and `App.test.jsx` (`[Line 4]`) in the **Test Data** tab:
+  
+  ![StrataMetriq Test Data Dashboard Preview](/img/test-data-dashboard.png)
+
 * **📌 TODO / FIXME Comments:** Catches unresolved code annotations (`TODO`, `FIXME`, `PENDING`, `BUG`, `REFACTOR`) as well as stray task tracking files (`TODO.md`, `TASKS.txt`).
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ LOW RISK: Unresolved TODO or FIXME Left Behind
+  // TODO: Fix calculation discrepancy for leap years before end of Q3
+  // FIXME: Memory leak when component unmounts quickly
+
+  // ✅ SAFE: Clean Code Without Pending Debt Annotations
+  const annualInterest = calculateCompoundInterest(principal, rate, years);
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq indexes pending task notes like in `AssetReport.jsx` (`LOW [Line 47] TODO/FIXME comments...`) under the **TODO/FIXME** tab:
+  
+  ![StrataMetriq TODO/FIXME Dashboard Preview](/img/todo-fixme-dashboard.png)
+
 * **💬 Commented Code Blocks:** Identifies blocks of dead, commented-out source code or inactive logic blocks spanning 2 or more consecutive lines.
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ MEDIUM RISK: Large Dead Commented-Out Code Blocks Spanning Multiple Lines
+  /* 
+  const oldCalculation = (a, b) => {
+    return a * b + 15 - Math.random();
+  };
+  */
+
+  // ✅ SAFE: Active Concise Logic & Single-Line Documentation Summaries
+  const newCalculation = (a, b) => a * b + 15;
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq isolates dead commented blocks in files like `Role.jsx` (`[Line 200]`) and `Module.jsx` (`[Line 206]`) under the **Commented Code** tab:
+  
+  ![StrataMetriq Commented Code Dashboard Preview](/img/commented-code-dashboard.png)
+
 * **⚰️ Dead Code:** Detects unreachable statements after `return`/`throw`/`break`, explicit unused code annotations, and hardcoded dead conditionals like `if (false)` or `while (0)`.
 * **🕳️ Empty Catch Blocks:** Identifies swallowed error exceptions where `try { ... } catch (e) {}` blocks contain zero error-handling logic.
 * **📦 Dev & Testing Imports:** Flags production modules that erroneously import development-only packages (e.g., importing `redux-logger` or `@testing-library` inside user-facing components).
