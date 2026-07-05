@@ -76,6 +76,44 @@ graph TD
 
 ---
 
+### ⚙️ How StrataMetriq Works Under the Hood (AST & Heuristic Pipeline)
+When you click the primary **`⚡ Run Deep Analysis`** button, StrataMetriq initiates a high-performance local scanning pipeline. Rather than just surface linting, it simultaneously evaluates raw source heuristics alongside deep Abstract Syntax Tree (AST) structural tokens:
+
+```text
+User Clicks "Run Deep Analysis"
+            │
+            ▼
+Read Every Source File
+            │
+            ├───────────────┐
+            ▼               ▼
+       Parse AST      Scan Raw Source
+            │               │
+            │               ├── TODO
+            │               ├── HACK
+            │               ├── TEMP
+            │               └── Hardcoded Secrets
+            │
+            ├── Imports
+            ├── Functions
+            ├── Components
+            ├── API Calls
+            ├── Complexity
+            ├── Dependencies
+            ├── Duplicate Logic
+            └── Circular Dependencies
+                    │
+                    ▼
+          Generate Health Score
+                    │
+                    ▼
+     Pre-Deployment Safety Report
+```
+
+This dual-branch pipeline ensures that structural flaws (like circular dependency loops and duplicate logic) are evaluated by the AST parser, while developer annotations and hardcoded secret strings are audited by our zero false-positive raw source heuristics—all culminating in your unified dashboard report!
+
+---
+
 ## 3. Quick Start: How to Launch & Scan
 
 1. **Install the Extension:** 
