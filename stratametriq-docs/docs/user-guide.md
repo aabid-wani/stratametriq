@@ -193,44 +193,77 @@ Answer the most critical engineering question before refactoring: *"If I modify 
   * 🗄️ **Affected Database Tables:** Database tables, collections, and ORM schemas accessed by this module.
   * 📊 **Affected Reports & Views:** UI dashboards and frontend views reliant on data streams originating here.
 
+**💡 Real-World Architectural Example:**
+If you modify `app.jsx`, StrataMetriq calculates its downstream blast radius by tracing every React child component (`<Main />`, `<Link />`, `<Container />`, `<Card />`, `<ActionColumn />`) that consumes its context or props.
+
+**📸 Interactive Dashboard Preview:**
+When inspecting a core module in your workspace, the dashboard gives you an immediate blast radius breakdown:
+
+![StrataMetriq Risk Impact Analysis Dashboard Preview](/img/risk-impact-analysis.png)
+
 ---
 
 ## 3. 🌳 Interactive Dependency Explorer
 Navigate your codebase through an interactive, visual dependency hierarchy rather than hunting through raw grep results.
 
+**💡 Real-World Architectural Example (Direct Imports & Call Trees):**
+Instead of manually guessing where a module is used, StrataMetriq maps the entire dependency hierarchy layer by layer:
 ```text
-ProductView.tsx (React Component)
+Role.jsx (React Permission Component)  [+25 more parent consumers]
        │  imports
        ▼
-ProductService.ts (Business Logic Layer)
-       │  calls
+Main.jsx (Selected Root Module)
+       │  direct imports (Layer 1)
        ▼
-GET /api/v1/products (HTTP Endpoint Route)
-       │  queries
-       ▼
-products_table (Database Schema)
+Child Components & Service Wrappers
 ```
 
+**📸 Interactive Dashboard Preview:**
+Notice how you can switch between inspecting direct Layer 1 imports and expanding the **Full Tree** view to trace multi-layer dependency chains:
+
+![StrataMetriq Dependency Explorer Dashboard Preview](/img/dependency-explorer.png)
+
 :::info Live VS Code Editor Synchronization
-Notice the green **`[Open in Editor]`** badge appearing dynamically next to files that are currently open in your active VS Code editor tabs.
+Notice the green **`[Open]`** badge appearing dynamically next to files that are currently open in your active VS Code editor tabs!
 :::
 
 ---
 
 ## 4. 🔀 API Flow Visualizer
-Trace the complete architectural lifecycle of HTTP requests from front-end user interactions down to database schema queries. Watch StrataMetriq's **Dynamic Entity Keyword Matching Engine** extract domain keywords without false positives:
+Trace the complete architectural lifecycle of HTTP requests from front-end user interactions down to database schema queries. Watch StrataMetriq's **Dynamic Entity Keyword Matching Engine** extract domain keywords without false positives.
 
+**💡 Real-World End-to-End Flow Example:**
+When filtering by the `Assets` module, StrataMetriq traces the entire full-stack request lifecycle across your workspace:
 ```text
-UI Component  ➔  HTTP Client  ➔  API Route  ➔  Controller  ➔  Middleware  ➔  Service  ➔  ORM / Repo  ➔  Database Table
+[React Component] Assets.jsx  ➔  [HTTP Request] GET /asset_type  ➔  [Server Entry Point] server.js  ➔  [Route Handler] assets_type.router.js
 ```
+
+**📸 Interactive Dashboard Preview:**
+Click any endpoint (like `GET /asset_type` or `POST /asset_type/create`) to reveal the visual End-to-End Request & Lifecycle sidebar:
+
+![StrataMetriq API Flow Visualizer Dashboard Preview](/img/api-flow-visualizer.png)
 
 ---
 
 ## 5. 👥 Duplicate Code & Circular Dependency Detection
 Maintain a clean, DRY (Don't Repeat Yourself), and decoupled codebase by catching structural flaws early.
 
-* **Duplicate Logic:** Evaluates lexical AST tokens across functions using Jaccard Similarity algorithms. Files sharing a similarity score above 85% are flagged with actionable refactoring tips.
-* **Circular Dependencies:** Detects tight coupling import loops caught by depth-first search algorithms (e.g., `ModuleA.ts ➔ ModuleB.ts ➔ ModuleC.ts ➔ ModuleA.ts`).
+* **Duplicate Logic:** Evaluates lexical AST tokens across functions using Jaccard Similarity algorithms. Files sharing a similarity score above 70% (such as `AssetType.jsx` and `Assets.jsx` with an **81% match**) are flagged with actionable refactoring tips (*"Suggest creating a shared helper"*).
+* **Circular Dependencies:** Detects tight coupling import loops caught by depth-first search algorithms (e.g., `App.jsx ➔ User.jsx ➔ App.jsx`).
+
+**💡 Real-World Code Example (What is Flagged):**
+```javascript
+// ❌ DUPLICATE LOGIC MATCH (81% Similarity):
+// AssetType.jsx and Assets.jsx implement identical data fetching & pagination table logic!
+
+// ❌ CIRCULAR DEPENDENCY LOOP:
+// App.jsx imports User.jsx, which in turn imports App.jsx back!
+```
+
+**📸 Interactive Dashboard Preview:**
+In your dashboard, duplicate files are ranked by percentage match alongside tight coupling circular loop warnings:
+
+![StrataMetriq Duplicate Logic and Circular Dependencies Dashboard Preview](/img/duplicate-circular-detection.png)
 
 ---
 

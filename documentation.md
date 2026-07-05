@@ -278,51 +278,85 @@ Answer the most critical engineering question before refactoring: *"If I modify 
   * 🗄️ **Affected Database Tables:** Database tables, collections, and ORM schemas accessed by this module.
   * 📊 **Affected Reports & Views:** UI dashboards and frontend views reliant on data streams originating here.
 
+**💡 Real-World Architectural Example:**
+If you modify `app.jsx`, StrataMetriq calculates its downstream blast radius by tracing every React child component (`<Main />`, `<Link />`, `<Container />`, `<Card />`, `<ActionColumn />`) that consumes its context or props.
+
+**📸 Interactive Dashboard Preview:**
+When inspecting a core module in your workspace, the dashboard gives you an immediate blast radius breakdown:
+
+![StrataMetriq Risk Impact Analysis Dashboard Preview](./risk-impact-analysis.png)
+
 ---
 
 ### 4.3 Interactive Dependency Explorer
 Navigate your codebase through an interactive, visual dependency hierarchy rather than hunting through raw grep results.
 
+**💡 Real-World Architectural Example (Direct Imports & Call Trees):**
+Instead of manually guessing where a module is used, StrataMetriq maps the entire dependency hierarchy layer by layer:
+```text
+Role.jsx (React Permission Component)  [+25 more parent consumers]
+       │  imports
+       ▼
+Main.jsx (Selected Root Module)
+       │  direct imports (Layer 1)
+       ▼
+Child Components & Service Wrappers
+```
+
+**📸 Interactive Dashboard Preview:**
+Notice how you can switch between inspecting direct Layer 1 imports and expanding the **Full Tree** view to trace multi-layer dependency chains:
+
+![StrataMetriq Dependency Explorer Dashboard Preview](./dependency-explorer.png)
+
 **💡 How to use:**
-* Select any file node to inspect its incoming and outgoing module relationships:
-  ```text
-  ProductView.tsx (React Component)
-         │  imports
-         ▼
-  ProductService.ts (Business Logic Layer)
-         │  calls
-         ▼
-  GET /api/v1/products (HTTP Endpoint Route)
-         │  queries
-         ▼
-  products_table (Database Schema)
-  ```
-* **Live VS Code Editor Synchronization:** Notice the green **`[Open in Editor]`** badge appearing dynamically next to files that are currently open in your active VS Code editor tabs.
+* **Live VS Code Editor Synchronization:** Notice the green **`[Open]`** badge appearing dynamically next to files that are currently open in your active VS Code editor tabs.
 * Click any node in the tree to instantly switch focus to that file in your editor.
 
 ---
 
 ### 4.4 API Flow Visualizer
-Trace the complete architectural lifecycle of HTTP requests from front-end user interactions down to database schema queries.
+Trace the complete architectural lifecycle of HTTP requests from front-end user interactions down to database schema queries. Watch StrataMetriq's **Dynamic Entity Keyword Matching Engine** extract domain keywords without false positives.
+
+**💡 Real-World End-to-End Flow Example:**
+When filtering by the `Assets` module, StrataMetriq traces the entire full-stack request lifecycle across your workspace:
+```text
+[React Component] Assets.jsx  ➔  [HTTP Request] GET /asset_type  ➔  [Server Entry Point] server.js  ➔  [Route Handler] assets_type.router.js
+```
+
+**📸 Interactive Dashboard Preview:**
+Click any endpoint (like `GET /asset_type` or `POST /asset_type/create`) to reveal the visual End-to-End Request & Lifecycle sidebar:
+
+![StrataMetriq API Flow Visualizer Dashboard Preview](./api-flow-visualizer.png)
 
 **💡 How to use:**
 * Scroll to the **🔀 StrataMetriq API Flow Visualizer** section on the dashboard.
-* Select an API endpoint (e.g., `GET /api/vendors`, `POST /api/orders`, or `DELETE /users/:id`).
-* Watch StrataMetriq's **Dynamic Entity Keyword Matching Engine** extract domain keywords (like `'vendor'` or `'order'`) to map out the entire vertical request lifecycle without false-positive matches:
-  ```text
-  UI Component  ➔  HTTP Client  ➔  API Route  ➔  Controller  ➔  Middleware  ➔  Service  ➔  ORM / Repo  ➔  Database Table
-  ```
-* Each step displays the precise file handling that architectural layer. Click any card to jump directly to the implementation!
+* Select an API endpoint to view its precise multi-tier lifecycle. Each step displays the exact file handling that architectural layer. Click any card to jump directly to the implementation!
 
 ---
 
 ### 4.5 Duplicate Code & Circular Dependency Detection
 Maintain a clean, DRY (Don't Repeat Yourself), and decoupled codebase by catching structural flaws early.
 
+* **Duplicate Logic:** Evaluates lexical AST tokens across functions using Jaccard Similarity algorithms. Files sharing a similarity score above 70% (such as `AssetType.jsx` and `Assets.jsx` with an **81% match**) are flagged with actionable refactoring tips (*"Suggest creating a shared helper"*).
+* **Circular Dependencies:** Detects tight coupling import loops caught by depth-first search algorithms (e.g., `App.jsx ➔ User.jsx ➔ App.jsx`).
+
+**💡 Real-World Code Example (What is Flagged):**
+```javascript
+// ❌ DUPLICATE LOGIC MATCH (81% Similarity):
+// AssetType.jsx and Assets.jsx implement identical data fetching & pagination table logic!
+
+// ❌ CIRCULAR DEPENDENCY LOOP:
+// App.jsx imports User.jsx, which in turn imports App.jsx back!
+```
+
+**📸 Interactive Dashboard Preview:**
+In your dashboard, duplicate files are ranked by percentage match alongside tight coupling circular loop warnings:
+
+![StrataMetriq Duplicate Logic and Circular Dependencies Dashboard Preview](./duplicate-circular-detection.png)
+
 **💡 How to use:**
-* Examine the **Duplicate Logic** card on the right column of the dashboard. StrataMetriq extracts and normalizes lexical AST tokens across functions and runs a Jaccard Similarity algorithm. Files sharing an similarity score above 85% (e.g., `92% match`) are flagged with actionable refactoring tips (e.g., *"Suggest creating a shared helper utility"*).
-* Examine the **Circular Dependencies** card below it to view tight coupling import loops caught by depth-first search algorithms (e.g., `ModuleA.ts ➔ ModuleB.ts ➔ ModuleC.ts ➔ ModuleA.ts`).
-* Click any file name in either card to jump to the editor and break the cycle or extract shared helpers.
+* Examine the **Duplicate Logic** and **Circular Dependencies** cards on the dashboard.
+* Click any file name to jump straight to the editor to refactor common utilities or break import loops.
 
 ---
 
