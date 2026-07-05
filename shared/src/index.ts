@@ -1,5 +1,5 @@
 export interface ProductionRisk {
-  category: 'Debug code' | 'Temporary code' | 'Hardcoded credentials' | 'Large commented code blocks' | 'TODO/FIXME comments' | 'Dead code' | 'Empty catch blocks' | 'Test data' | 'Unused development imports';
+  category: 'Debug code' | 'Temporary code' | 'Hardcoded credentials' | 'Large commented code blocks' | 'TODO/FIXME comments' | 'Dead code' | 'Empty catch blocks' | 'Test data' | 'Unused development imports' | 'Memory Leaks / SPA Timers' | 'Insecure Cryptography' | 'SQL / NoSQL Injection' | 'XSS DOM Risks' | string;
   message: string;
   severity: 'HIGH' | 'MEDIUM' | 'LOW';
   line?: number;

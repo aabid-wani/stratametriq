@@ -199,6 +199,19 @@ function App() {
     return total;
   }, [nodes]);
 
+  const activeRiskCategories = useMemo(() => {
+    const cats = new Set<string>();
+    nodes.forEach((n: any) => {
+      if (n.productionRisks) {
+        n.productionRisks.forEach((r: any) => {
+          if (r.category) cats.add(r.category);
+        });
+      }
+    });
+    return cats;
+  }, [nodes]);
+
+
   const getRecommendations = (nodeData: any) => {
     if (!nodeData) return { recs: [], estimatedHealth: 100 };
     const recs: string[] = [];
@@ -670,7 +683,7 @@ function App() {
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1.2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
           {[
-            { id: 'All', label: `All Risks (${totalProductionRisks})` },
+            { id: 'All', label: `All Risks (${totalProductionRisks})`, alwaysShow: true },
             { id: 'Hardcoded credentials', label: '🔑 Secrets' },
             { id: 'Debug code', label: '🐞 Debug Code' },
             { id: 'Temporary code', label: '🚧 Temp Code' },
@@ -679,26 +692,32 @@ function App() {
             { id: 'Large commented code blocks', label: '💬 Commented Code' },
             { id: 'Dead code', label: '⚰️ Dead Code' },
             { id: 'Empty catch blocks', label: '🕳️ Empty Catch' },
-            { id: 'Unused development imports', label: '📦 Dev Imports' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setSelectedRiskCategory(tab.id)}
-              style={{
-                background: selectedRiskCategory === tab.id ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                color: selectedRiskCategory === tab.id ? '#38bdf8' : '#94a3b8',
-                border: selectedRiskCategory === tab.id ? '1px solid #38bdf8' : '1px solid transparent',
-                padding: '4px 12px',
-                borderRadius: '16px',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                fontWeight: selectedRiskCategory === tab.id ? 'bold' : 'normal'
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { id: 'Unused development imports', label: '📦 Dev Imports' },
+            { id: 'Memory Leaks / SPA Timers', label: '🐢 Memory Leaks' },
+            { id: 'Insecure Cryptography', label: '🔐 Insecure Crypto' },
+            { id: 'SQL / NoSQL Injection', label: '💉 SQL Injection' },
+            { id: 'XSS DOM Risks', label: '🌐 XSS Risks' }
+          ]
+            .filter(tab => tab.alwaysShow || activeRiskCategories.has(tab.id))
+            .map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedRiskCategory(tab.id)}
+                style={{
+                  background: selectedRiskCategory === tab.id ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                  color: selectedRiskCategory === tab.id ? '#38bdf8' : '#94a3b8',
+                  border: selectedRiskCategory === tab.id ? '1px solid #38bdf8' : '1px solid transparent',
+                  padding: '4px 12px',
+                  borderRadius: '16px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: selectedRiskCategory === tab.id ? 'bold' : 'normal'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
         </div>
 
         {productionRiskFiles.length === 0 ? (

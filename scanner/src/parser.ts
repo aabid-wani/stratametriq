@@ -149,6 +149,50 @@ export class Scanner {
       risks.push({ category: 'Test data', message: 'Test suite, mock data, or test fixture detected', severity: 'HIGH', line: 1 });
     }
 
+    // 10. Memory Leaks / Uncleaned Timers & Listeners (setTimeout, setInterval, addEventListener)
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      if (/(?:^|\s|\b|window\.|self\.)(?:setTimeout|setInterval|addEventListener|socket\.on)\s*\(/i.test(line) && !/clearTimeout|clearInterval|removeEventListener|socket\.off/i.test(sourceText)) {
+        if (!risks.some(r => r.category === 'Memory Leaks / SPA Timers')) {
+          risks.push({ category: 'Memory Leaks / SPA Timers', message: 'Timer or event listener detected without cleanup (potential SPA memory leak)', severity: 'MEDIUM', line: idx + 1 });
+        }
+        break;
+      }
+    }
+
+    // 11. Insecure Cryptography
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      if (/crypto\.createHash\(['"](md5|sha1|des)['"]\)/i.test(line) || /Math\.random\(\).*?(token|auth|secret|key|id)/i.test(line)) {
+        if (!risks.some(r => r.category === 'Insecure Cryptography')) {
+          risks.push({ category: 'Insecure Cryptography', message: 'Detected weak cryptographic hash function (MD5/SHA1/DES) or Math.random for security', severity: 'HIGH', line: idx + 1 });
+        }
+        break;
+      }
+    }
+
+    // 12. SQL / NoSQL Injection
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      if (/(?:SELECT|INSERT|UPDATE|DELETE|FROM|WHERE).*?['"]\s*\+/i.test(line) || /\+\s*['"].*?(?:SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)/i.test(line) || /query\s*\(\s*['"`].*?\$\{/i.test(line)) {
+        if (!risks.some(r => r.category === 'SQL / NoSQL Injection')) {
+          risks.push({ category: 'SQL / NoSQL Injection', message: 'Raw string concatenation detected in database query (SQL injection risk)', severity: 'HIGH', line: idx + 1 });
+        }
+        break;
+      }
+    }
+
+    // 13. XSS Risks (Unsanitized DOM)
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      if (/dangerouslySetInnerHTML/i.test(line) || /\beval\s*\(/i.test(line) || /document\.write\s*\(/i.test(line)) {
+        if (!risks.some(r => r.category === 'XSS DOM Risks')) {
+          risks.push({ category: 'XSS DOM Risks', message: 'Unsanitized DOM execution detected (dangerouslySetInnerHTML / eval / document.write)', severity: 'HIGH', line: idx + 1 });
+        }
+        break;
+      }
+    }
+
     // Module-level tokenization for duplicates (capped for large project performance)
     if (sourceText.length > 50 && this.globalFunctions.length < 500) {
       const matches = sourceText.match(/[a-zA-Z0-9]+/g);
