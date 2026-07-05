@@ -309,8 +309,24 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
   
   ![StrataMetriq Dev Imports Dashboard Preview](/img/dev-imports-dashboard.png)
 
-:::tip One-Click Remediation
-Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code!
+### 💡 Extensibility & Custom Rule Roadmap (Adding New Features & Keywords)
+A frequent question from enterprise engineering teams is: *"Can we check for additional features, company-specific keywords, or custom security rules beyond the standard 9-point checklist?"* **The answer is YES!**
+
+StrataMetriq is built on an extensible, modular AST heuristic rule engine. Rather than hardcoding static regex checks, each security check is a self-contained rule object. This allows us (or enterprise teams) to seamlessly plug in custom keywords, compliance heuristics, or brand-new safety scanners without modifying the core parser!
+
+#### 🚀 Top Potential Features & Keywords Available for Next-Gen Releases:
+| Proposed Rule / Suite | Target Keywords & AST Patterns | Enterprise Value & Why It's Needed |
+| :--- | :--- | :--- |
+| **🔐 Insecure Cryptography** | `crypto.createHash('md5')`, `sha1`, `des`, `Math.random()` for auth tokens | Prevents broken encryption algorithms and weak hashing that can be cracked in seconds. |
+| **💉 SQL / NoSQL Injection** | Raw string concat in queries: `"SELECT * FROM users WHERE id = '" + id` | Stops database destruction and unauthorized data exfiltration before deployment. |
+| **🌐 Unsanitized DOM (XSS)** | `dangerouslySetInnerHTML`, `eval()`, `setTimeout("string")`, `document.write()` | Eliminates Cross-Site Scripting (XSS) risks that steal user session cookies. |
+| **🐢 Memory Leaks (SPAs)** | Uncleaned `window.addEventListener()`, `setInterval()`, or `socket.on()` in `useEffect` | Prevents browser lag, memory bloat, and application crashes in React SPAs over time. |
+| **🛑 Hardcoded Magic URLs** | Raw HTTP/IP endpoints (`http://api.staging.internal/v1` or `192.168.1.50`) | Forces teams to centralize API endpoints and environment variables in clean config files. |
+| **⚡ Synchronous Blocking** | Node.js blocking calls: `fs.readFileSync()`, `fs.writeFileSync()` inside Express routes | Prevents synchronous file operations from freezing the Node.js event loop during high traffic. |
+| **🔐 CORS Misconfigurations** | Permissive wildcard origins `cors({ origin: '*' })` or disabled CSRF protections | Secures API endpoints against unauthorized cross-origin API hijacking. |
+
+:::tip One-Click Remediation & Custom Rules
+Click any detected risk card in the UI to immediately open that exact source file and line number in VS Code! Have a custom keyword you need audited? Our heuristic rule array can be extended in seconds!
 :::
 
 ---
