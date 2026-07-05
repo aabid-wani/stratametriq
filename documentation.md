@@ -79,6 +79,7 @@ graph TD
 ### ⚙️ How StrataMetriq Works Under the Hood (AST & Heuristic Pipeline)
 When you click the primary **`⚡ Run Deep Analysis`** button, StrataMetriq initiates a high-performance local scanning pipeline. Rather than just surface linting, it simultaneously evaluates raw source heuristics alongside deep Abstract Syntax Tree (AST) structural tokens:
 
+#### 1. High-Level Pipeline Summary
 ```text
 User Clicks "Run Deep Analysis"
             │
@@ -108,6 +109,99 @@ Read Every Source File
                     │
                     ▼
      Pre-Deployment Safety Report
+```
+
+#### 2. Full End-to-End Architectural Tracing Flowchart
+For developers and system architects who want to understand the complete end-to-end lifecycle from IDE workspace initialization to final dashboard rendering, here is the full architectural execution flow:
+
+```text
+                         ┌────────────────────────────┐
+                         │   Developer Opens Project  │
+                         └─────────────┬──────────────┘
+                                       │
+                                       ▼
+                         ┌────────────────────────────┐
+                         │ Click "Run Deep Analysis"  │
+                         └─────────────┬──────────────┘
+                                       │
+                                       ▼
+                         ┌────────────────────────────┐
+                         │ Read All JS / TS Files     │
+                         │ (Workspace Scanner)        │
+                         └─────────────┬──────────────┘
+                                       │
+                                       ▼
+                    ┌─────────────────────────────────────┐
+                    │ Parse Every File into AST           │
+                    │ (Acorn / TypeScript Parser)         │
+                    └─────────────┬───────────────────────┘
+                                  │
+          ┌───────────────────────┼───────────────────────────┐
+          │                       │                           │
+          ▼                       ▼                           ▼
+ ┌─────────────────┐     ┌─────────────────┐       ┌──────────────────┐
+ │ Extract Imports │     │ Extract JSX     │       │ Extract Functions│
+ │ & Exports       │     │ Components      │       │ Classes & Hooks  │
+ └────────┬────────┘     └────────┬────────┘       └────────┬─────────┘
+          │                       │                           │
+          └───────────────┬───────┴───────────────┬───────────┘
+                          │                       │
+                          ▼                       ▼
+              ┌──────────────────────┐   ┌──────────────────────┐
+              │ Detect API Calls     │   │ Calculate Complexity │
+              │ fetch / axios        │   │ Imports, Functions,  │
+              │                      │   │ Components, APIs     │
+              └──────────┬───────────┘   └──────────┬───────────┘
+                         │                          │
+                         └──────────────┬───────────┘
+                                        │
+                                        ▼
+                     ┌─────────────────────────────────────┐
+                     │ Build Project Dependency Graph      │
+                     │ (Nodes = Files, Edges = Imports)    │
+                     └─────────────┬───────────────────────┘
+                                   │
+            ┌──────────────────────┼──────────────────────────┐
+            │                      │                          │
+            ▼                      ▼                          ▼
+ ┌──────────────────┐    ┌────────────────────┐    ┌────────────────────┐
+ │ Project Health   │    │ API Flow Mapping   │    │ Impact Analysis    │
+ │ Score            │    │ Frontend → Backend │    │ Circular Dependency│
+ └────────┬─────────┘    └─────────┬──────────┘    └──────────┬─────────┘
+          │                        │                          │
+          └───────────────┬────────┴──────────────┬───────────┘
+                          │                       │
+                          ▼                       ▼
+             ┌────────────────────────┐   ┌────────────────────────┐
+             │ Source Code Scan       │   │ Production Audit       │
+             │ (Regex / Pattern Scan) │   │                        │
+             └───────────┬────────────┘   └───────────┬────────────┘
+                         │                            │
+                         ├── TODO / HACK / TEMP       │
+                         ├── Hardcoded Secrets        │
+                         ├── Commented Code           │
+                         ├── console.log()            │
+                         ├── debugger                 │
+                         ├── Unused Imports           │
+                         └── Other Safety Rules       │
+                                      │               │
+                                      ▼               ▼
+                     ┌────────────────────────────────────┐
+                     │ Generate Final Architecture Report │
+                     └─────────────┬──────────────────────┘
+                                   │
+                                   ▼
+     ┌─────────────────────────────────────────────────────────────────┐
+     │                    StrataMetriq Dashboard                       │
+     │                                                                 │
+     │ ✓ Project Health Score                                          │
+     │ ✓ Dependency Graph                                              │
+     │ ✓ API Flow Visualizer                                           │
+     │ ✓ Module Health                                                 │
+     │ ✓ Architectural Metrics                                         │
+     │ ✓ Pre-Deployment Safety Audit                                   │
+     │ ✓ Recommendations & Insights                                    │
+     └─────────────────────────────────────────────────────────────────┘
 ```
 
 This dual-branch pipeline ensures that structural flaws (like circular dependency loops and duplicate logic) are evaluated by the AST parser, while developer annotations and hardcoded secret strings are audited by our zero false-positive raw source heuristics—all culminating in your unified dashboard report!
