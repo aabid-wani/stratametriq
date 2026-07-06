@@ -10,14 +10,19 @@ export class Scanner {
   constructor() {}
 
   public parseFile(filePath: string, sourceText: string) {
+    const ext = path.extname(filePath).toLowerCase();
+    const isJsOrTs = ['.ts', '.js', '.tsx', '.jsx', '.mjs', '.cjs'].includes(ext) || ext === '';
     const isJsx = filePath.endsWith('.jsx') || filePath.endsWith('.tsx');
-    const sourceFile = ts.createSourceFile(
-      filePath,
-      sourceText,
-      ts.ScriptTarget.Latest,
-      true,
-      isJsx ? ts.ScriptKind.TSX : undefined
-    );
+    let sourceFile: ts.SourceFile | undefined;
+    if (isJsOrTs) {
+      sourceFile = ts.createSourceFile(
+        filePath,
+        sourceText,
+        ts.ScriptTarget.Latest,
+        true,
+        isJsx ? ts.ScriptKind.TSX : undefined
+      );
+    }
 
     const normalizedPath = filePath.replace(/\\/g, '/').toLowerCase();
     let graphNode = this.graph.nodes.find(n => n.id === normalizedPath);
@@ -49,11 +54,13 @@ export class Scanner {
     if (sourceText.includes('TODO:') || sourceText.includes('FIXME:')) {
       graphNode.problems.push('Note: Unresolved TODO/FIXME comment');
     }
-    const parseDiagnostics = (sourceFile as any).parseDiagnostics || [];
-    if (parseDiagnostics.length > 0) {
-      parseDiagnostics.forEach((d: any) => {
-        graphNode!.problems!.push(`Syntax Error: ${d.messageText || 'Invalid syntax'}`);
-      });
+    if (sourceFile) {
+      const parseDiagnostics = (sourceFile as any).parseDiagnostics || [];
+      if (parseDiagnostics.length > 0) {
+        parseDiagnostics.forEach((d: any) => {
+          graphNode!.problems!.push(`Syntax Error: ${d.messageText || 'Invalid syntax'}`);
+        });
+      }
     }
     graphNode.problemCount = graphNode.problems.length;
 
@@ -61,7 +68,7 @@ export class Scanner {
     const lines = sourceText.split(/\r\n|\r|\n|\u2028|\u2029/);
     for (let idx = 0; idx < lines.length; idx++) {
       const line = lines[idx];
-      if (!/^\s*(\/\/|\*|<!--|\{\/\*)/.test(line) && /(console\.(log|debug|dir|table|trace|warn|error)|debugger;|window\.__REDUX_DEVTOOLS_EXTENSION__|alert\s*\(|confirm\s*\()/i.test(line)) {
+      if (!/^\s*(\/\/|\*|<!--|\{\/\*|#)/.test(line) && /(console\.(log|debug|dir|table|trace|warn|error)|debugger;|window\.__REDUX_DEVTOOLS_EXTENSION__|alert\s*\(|confirm\s*\(|print\s*\(|System\.out\.print|fmt\.Print|log\.(Printf|Println|Print))/i.test(line)) {
         risks.push({ category: 'Debug code', message: 'Found active debug statement (console, debugger, alert)', severity: 'HIGH', line: idx + 1 });
         break;
       }
@@ -70,7 +77,7 @@ export class Scanner {
     // 2. Temporary code (Only trigger on comments or annotations, not regular variable names)
     for (let idx = 0; idx < lines.length; idx++) {
       const line = lines[idx];
-      if (/\/\/\s*(?:TEMP|HACK|XXX|WIP|@temporary|remove\s*this|delete\s*this|for\s*testing)\b|\/\*[\s\S]*?\b(?:TEMP|HACK|XXX|WIP|@temporary|remove\s*this|delete\s*this)\b/i.test(line)) {
+      if (/\/\/\s*(?:TEMP|HACK|XXX|WIP|@temporary|remove\s*this|delete\s*this|for\s*testing)\b|\/\*[\s\S]*?\b(?:TEMP|HACK|XXX|WIP|@temporary|remove\s*this|delete\s*this)\b|#\s*(?:TEMP|HACK|XXX|WIP|@temporary|remove\s*this|delete\s*this|for\s*testing)\b/i.test(line)) {
         risks.push({ category: 'Temporary code', message: 'Found temporary / hack / WIP code annotation', severity: 'HIGH', line: idx + 1 });
         break;
       }
@@ -90,7 +97,7 @@ export class Scanner {
     let commentStartLine = 1;
     for (let idx = 0; idx < lines.length; idx++) {
       const line = lines[idx];
-      if (/^\s*(\/\/|\*|<!--|\{\/\*)/.test(line)) {
+      if (/^\s*(\/\/|\*|<!--|\{\/\*|#)/.test(line)) {
         if (/[;={}\(\)<>\[\]\+\-\*\/]|\b(function|const|let|var|import|export|return|if|for|while|class|console|async|await|try|catch|new|this|props|state|true|false|null|undefined|app|router|db|res|req)\b/i.test(line)) {
           if (consecutiveComments === 0) commentStartLine = idx + 1;
           consecutiveComments++;
@@ -115,7 +122,7 @@ export class Scanner {
     // 5. TODO/FIXME comments & To-do files
     for (let idx = 0; idx < lines.length; idx++) {
       const line = lines[idx];
-      if (/\/\/\s*(?:TODO|TO-DO|FIXME|PENDING|BUG|REFACTOR|XXX|WIP|NOTE\s*:)\b|\/\*[\s\S]*?\b(?:TODO|TO-DO|FIXME|FIX\s*ME|PENDING|BUG|REFACTOR)\b/i.test(line)) {
+      if (/\/\/\s*(?:TODO|TO-DO|FIXME|PENDING|BUG|REFACTOR|XXX|WIP|NOTE\s*:)\b|\/\*[\s\S]*?\b(?:TODO|TO-DO|FIXME|FIX\s*ME|PENDING|BUG|REFACTOR)\b|#\s*(?:TODO|TO-DO|FIXME|PENDING|BUG|REFACTOR|XXX|WIP|NOTE\s*:)\b/i.test(line)) {
         risks.push({ category: 'TODO/FIXME comments', message: 'Found TODO / FIXME note or task/to-do file item', severity: 'LOW', line: idx + 1 });
         break;
       }
@@ -127,7 +134,7 @@ export class Scanner {
     // 6. Dead code
     for (let idx = 0; idx < lines.length; idx++) {
       const line = lines[idx];
-      if (/\/\/\s*(?:dead\s*code|unused|deprecated|legacy|no\s*longer\s*used|old\s*code|remove\s*this|delete\s*this|unreachable|not\s*in\s*use)\b/i.test(line) || /if\s*\(\s*(false|0|""|null|undefined)\s*\)/i.test(line) || /while\s*\(\s*(false|0)\s*\)/i.test(line)) {
+      if (/\/\/\s*(?:dead\s*code|unused|deprecated|legacy|no\s*longer\s*used|old\s*code|remove\s*this|delete\s*this|unreachable|not\s*in\s*use)\b/i.test(line) || /#\s*(?:dead\s*code|unused|deprecated|legacy|no\s*longer\s*used|old\s*code|remove\s*this|delete\s*this|unreachable|not\s*in\s*use)\b/i.test(line) || /if\s*\(\s*(false|0|""|null|undefined)\s*\)/i.test(line) || /while\s*\(\s*(false|0)\s*\)/i.test(line)) {
         if (!risks.some(r => r.category === 'Dead code')) {
           risks.push({ category: 'Dead code', message: 'Dead code detected: unused/deprecated block or false conditional', severity: 'MEDIUM', line: idx + 1 });
         }
@@ -204,25 +211,29 @@ export class Scanner {
       }
     }
 
-    ts.forEachChild(sourceFile, (node) => {
-      this.visitNode(node, normalizedPath, graphNode!, sourceFile);
-    });
-
-    // 8. Detect base router prefix mounting (e.g., app.use(process.env.BASE_API_URL + "/api/assignment", router))
-    const useMatch = sourceFile.text.match(/(?:app|router)\.use\s*\([^,]*?(['"`])(\/(?:api\/|v\d+\/)?[a-zA-Z0-9_/-]+)\1/i);
-    if (useMatch && useMatch[2] && graphNode && graphNode.apisCalled && graphNode.apisCalled.length > 0) {
-      const basePrefix = useMatch[2].replace(/\/$/, ''); // e.g., "/api/assignment"
-      graphNode.apisCalled = graphNode.apisCalled.map(api => {
-        const [method, ...pathParts] = api.split(' ');
-        let relPath = pathParts.join(' ');
-        if (relPath === '/' || relPath === '') {
-          return `${method} ${basePrefix}`;
-        }
-        if (!relPath.startsWith(basePrefix)) {
-          relPath = `${basePrefix}${relPath.startsWith('/') ? '' : '/'}${relPath}`;
-        }
-        return `${method} ${relPath}`;
+    if (isJsOrTs && sourceFile) {
+      ts.forEachChild(sourceFile, (node) => {
+        this.visitNode(node, normalizedPath, graphNode!, sourceFile!);
       });
+
+      // 8. Detect base router prefix mounting (e.g., app.use(process.env.BASE_API_URL + "/api/assignment", router))
+      const useMatch = sourceText.match(/(?:app|router)\.use\s*\([^,]*?(['"`])(\/(?:api\/|v\d+\/)?[a-zA-Z0-9_/-]+)\1/i);
+      if (useMatch && useMatch[2] && graphNode && graphNode.apisCalled && graphNode.apisCalled.length > 0) {
+        const basePrefix = useMatch[2].replace(/\/$/, ''); // e.g., "/api/assignment"
+        graphNode.apisCalled = graphNode.apisCalled.map(api => {
+          const [method, ...pathParts] = api.split(' ');
+          let relPath = pathParts.join(' ');
+          if (relPath === '/' || relPath === '') {
+            return `${method} ${basePrefix}`;
+          }
+          if (!relPath.startsWith(basePrefix)) {
+            relPath = `${basePrefix}${relPath.startsWith('/') ? '' : '/'}${relPath}`;
+          }
+          return `${method} ${relPath}`;
+        });
+      }
+    } else {
+      this.parsePolyglotAST(filePath, ext, sourceText, normalizedPath, graphNode!);
     }
   }
 
@@ -382,7 +393,7 @@ export class Scanner {
   public getGraph(): Graph {
     for (const edge of this.graph.edges) {
       if (!this.nodeIds.has(edge.target)) {
-        const possibleExts = ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs', '/index.js', '/index.ts', '/index.jsx', '/index.tsx'];
+        const possibleExts = ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs', '.py', '.java', '.go', '.cs', '.rb', '.php', '.rs', '.cpp', '.h', '/index.js', '/index.ts', '/index.jsx', '/index.tsx', '/__init__.py'];
         let found = false;
         for (const ext of possibleExts) {
           if (this.nodeIds.has(edge.target + ext)) {
@@ -489,5 +500,123 @@ export class Scanner {
     this.graph.cycles = cycles;
 
     return this.graph;
+  }
+
+  private parsePolyglotAST(filePath: string, ext: string, sourceText: string, currentFilePath: string, graphNode: Node) {
+    const lines = sourceText.split(/\r\n|\r|\n/);
+
+    // 1. Python (.py)
+    if (ext === '.py') {
+      for (const line of lines) {
+        // Imports: import foo.bar as fb | from foo.bar import baz
+        const impMatch = line.match(/^\s*(?:import\s+([a-zA-Z0-9_\.]+)|from\s+([a-zA-Z0-9_\.]+)\s+import)/);
+        if (impMatch) {
+          const mod = (impMatch[1] || impMatch[2]).replace(/\./g, '/').toLowerCase();
+          this.graph.edges.push({ source: currentFilePath.toLowerCase(), target: mod, type: 'imports' });
+        }
+        // Functions / Classes
+        if (/^\s*(?:async\s+)?def\s+([a-zA-Z0-9_]+)\s*\(/.test(line) || /^\s*class\s+([a-zA-Z0-9_]+)/.test(line)) {
+          graphNode.functionsCount!++;
+          graphNode.exportsCount!++;
+        }
+        // API Routes: @app.get("/api/...") | @router.post(...) | @app.route("/api/...", methods=['POST'])
+        const apiMatch = line.match(/@(?:app|router|api)\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/i);
+        if (apiMatch) {
+          const endpoint = `${apiMatch[1].toUpperCase()} ${apiMatch[2]}`;
+          if (!graphNode.apisCalled!.includes(endpoint)) graphNode.apisCalled!.push(endpoint);
+        }
+        const routeMatch = line.match(/@(?:app|blueprint)\.route\s*\(\s*['"`]([^'"`]+)['"`].*?methods\s*=\s*\[\s*['"`]([A-Z]+)['"`]/i);
+        if (routeMatch && routeMatch[1] && routeMatch[2]) {
+          const endpoint = `${routeMatch[2].toUpperCase()} ${routeMatch[1]}`;
+          if (!graphNode.apisCalled!.includes(endpoint)) graphNode.apisCalled!.push(endpoint);
+        }
+        // DB Tables: __tablename__ = 'users_table' | class User(db.Model):
+        const tblMatch = line.match(/__tablename__\s*=\s*['"`]([^'"`]+)['"`]/i) || line.match(/Table\s*\(\s*['"`]([^'"`]+)['"`]/i);
+        if (tblMatch && tblMatch[1]) {
+          const tbl = tblMatch[1].toLowerCase();
+          if (!graphNode.dbTables!.includes(tbl)) graphNode.dbTables!.push(tbl);
+        }
+      }
+    }
+    // 2. Java (.java) & C# (.cs)
+    else if (ext === '.java' || ext === '.cs') {
+      for (const line of lines) {
+        // Imports: import com.example.foo; | using System.Text;
+        const impMatch = line.match(/^\s*(?:import|using)\s+([a-zA-Z0-9_\.]+)\s*;/);
+        if (impMatch && impMatch[1]) {
+          const mod = impMatch[1].replace(/\./g, '/').toLowerCase();
+          this.graph.edges.push({ source: currentFilePath.toLowerCase(), target: mod, type: 'imports' });
+        }
+        // Functions / Methods / Classes
+        if (/^\s*(?:public|private|protected|internal)\s+(?:static\s+|async\s+|virtual\s+|override\s+|final\s+)*(?:class|interface|record|[a-zA-Z0-9_<>\/]+)\s+([a-zA-Z0-9_]+)\s*(?:\(|\{|extends|implements|:)/.test(line)) {
+          graphNode.functionsCount!++;
+          if (/public|internal/.test(line)) graphNode.exportsCount!++;
+        }
+        // API Routes: @GetMapping("/api/...") | [HttpGet("/api/...")] | @RequestMapping(...)
+        const apiMatch = line.match(/(?:@|\[)(?:Get|Post|Put|Delete|Patch)(?:Mapping|Http|Route)?\s*\(\s*(?:value\s*=\s*)?['"`]([^'"`]+)['"`]/i);
+        if (apiMatch && apiMatch[1]) {
+          let method = 'GET';
+          if (/Post/i.test(line)) method = 'POST';
+          else if (/Put/i.test(line)) method = 'PUT';
+          else if (/Delete/i.test(line)) method = 'DELETE';
+          else if (/Patch/i.test(line)) method = 'PATCH';
+          const endpoint = `${method} ${apiMatch[1]}`;
+          if (!graphNode.apisCalled!.includes(endpoint)) graphNode.apisCalled!.push(endpoint);
+        }
+        // DB Tables: @Table(name = "users_table") | [Table("users")]
+        const tblMatch = line.match(/(?:@|\[)Table\s*\(\s*(?:name\s*=\s*)?['"`]([^'"`]+)['"`]/i);
+        if (tblMatch && tblMatch[1]) {
+          const tbl = tblMatch[1].toLowerCase();
+          if (!graphNode.dbTables!.includes(tbl)) graphNode.dbTables!.push(tbl);
+        }
+      }
+    }
+    // 3. Go (.go)
+    else if (ext === '.go') {
+      for (const line of lines) {
+        // Imports: import "example.com/pkg/foo"
+        const impMatch = line.match(/^\s*(?:import\s+)?['"`]([a-zA-Z0-9_\-\.\/]+)['"`]/);
+        if (impMatch && impMatch[1] && !line.includes('package ')) {
+          const mod = impMatch[1].toLowerCase();
+          this.graph.edges.push({ source: currentFilePath.toLowerCase(), target: mod, type: 'imports' });
+        }
+        // Functions: func MyFunc(...) | func (s *Service) Handler(...)
+        if (/^\s*func\s+(?:\([^\)]+\)\s*)?([a-zA-Z0-9_]+)\s*\(/.test(line)) {
+          graphNode.functionsCount!++;
+          const funcNameMatch = line.match(/^\s*func\s+(?:\([^\)]+\)\s*)?([a-zA-Z0-9_]+)/);
+          if (funcNameMatch && funcNameMatch[1] && /^[A-Z]/.test(funcNameMatch[1])) graphNode.exportsCount!++;
+        }
+        // API Routes: r.GET("/api/...", ...) | app.Post("/api/...", ...)
+        const apiMatch = line.match(/(?:\.|\b)(GET|POST|PUT|DELETE|PATCH)\s*\(\s*['"`]([^'"`]+)['"`]/i);
+        if (apiMatch && apiMatch[1] && apiMatch[2]) {
+          const endpoint = `${apiMatch[1].toUpperCase()} ${apiMatch[2]}`;
+          if (!graphNode.apisCalled!.includes(endpoint)) graphNode.apisCalled!.push(endpoint);
+        }
+      }
+    }
+    // 4. Other languages (Ruby, PHP, Rust, C++, C, etc.)
+    else {
+      for (const line of lines) {
+        if (/^\s*(?:fn|def|function|void|int|bool|string)\s+([a-zA-Z0-9_]+)\s*\(/.test(line)) {
+          graphNode.functionsCount!++;
+          graphNode.exportsCount!++;
+        }
+        const impMatch = line.match(/^\s*(?:use|require|require_once|include|#include)\s+['"`<]([a-zA-Z0-9_\-\.\/]+)['">]/);
+        if (impMatch && impMatch[1]) {
+          this.graph.edges.push({ source: currentFilePath.toLowerCase(), target: impMatch[1].toLowerCase(), type: 'imports' });
+        }
+      }
+    }
+
+    // Generic SQL queries across all polyglot files
+    for (const line of lines) {
+      const sqlMatch = line.match(/(?:FROM|INTO|UPDATE|JOIN|TABLE)\s+(?:[a-zA-Z0-9_]+\.)?([a-zA-Z0-9_]+)/i);
+      if (sqlMatch && sqlMatch[1]) {
+        const tbl = sqlMatch[1].toLowerCase();
+        if (!['select', 'where', 'set', 'values', 'as', 'on', 'left', 'right', 'inner', 'outer', 'by', 'order', 'group', 'limit', 'count', 'and', 'or'].includes(tbl)) {
+          if (!graphNode.dbTables!.includes(tbl)) graphNode.dbTables!.push(tbl);
+        }
+      }
+    }
   }
 }

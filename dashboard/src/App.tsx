@@ -62,14 +62,14 @@ function App() {
 
   const handleOpenItemWithLine = (filePath: string, textStr?: string, defaultLine?: number) => {
     if (!filePath) return;
-    let targetLine = defaultLine;
+    let targetLine = defaultLine !== undefined ? Number(defaultLine) : undefined;
     if (textStr) {
       const match = textStr.match(/\[Line\s+(\d+)\]/i);
       if (match && match[1]) {
         targetLine = parseInt(match[1], 10);
       }
     }
-    handleOpenFile(filePath, targetLine);
+    handleOpenFile(filePath, targetLine || 1);
   };
 
   const getFileName = (pathStr: string) => {
@@ -763,7 +763,7 @@ function App() {
                       <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '3px', fontWeight: 'bold', background: risk.severity === 'HIGH' ? 'rgba(239,68,68,0.3)' : risk.severity === 'MEDIUM' ? 'rgba(245,158,11,0.3)' : 'rgba(56,189,248,0.3)', color: risk.severity === 'HIGH' ? '#fca5a5' : risk.severity === 'MEDIUM' ? '#fcd34d' : '#7dd3fc' }}>
                         {risk.severity}
                       </span>
-                      <span style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.7rem' }}>[Line {risk.line || 1}]</span>
+                      <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(file.filePath, undefined, risk.line || 1); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }} title={`Click to jump directly to Line ${risk.line || 1} in editor`}>[Line {risk.line || 1}]</span>
                       <span>{risk.category}: {risk.message}</span>
                     </div>
                   ))}
@@ -1069,7 +1069,7 @@ function App() {
                       <span style={{ fontWeight: 'bold', color: '#f8fafc', fontSize: '0.85rem' }}>{risk.category}</span>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
-                      <span style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', marginRight: '6px' }}>[Line {risk.line || 1}]</span>
+                      <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(selectedNodeData.filePath, undefined, risk.line || 1); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', marginRight: '6px', textDecoration: 'underline', cursor: 'pointer', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }} title={`Click to jump directly to Line ${risk.line || 1} in editor`}>[Line {risk.line || 1}]</span>
                       {risk.message}
                     </div>
                   </li>

@@ -1,4 +1,4 @@
-# StrataMetriq: Comprehensive End-to-End User Manual & Technical Architecture Guide (v1.1.0)
+# StrataMetriq: Comprehensive End-to-End User Manual & Technical Architecture Guide (v1.3.0)
 
 > **🌐 Official GitHub Repository:** [https://github.com/aabid-wani/stratametriq](https://github.com/aabid-wani/stratametriq)  
 > **📦 VS Code Marketplace:** `stratometriq.stratometriq-extension`
@@ -213,7 +213,7 @@ This dual-branch pipeline ensures that structural flaws (like circular dependenc
 1. **Install the Extension:** 
    * Open Visual Studio Code and press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS).
    * Type and select **`Extensions: Install from VSIX...`**.
-   * Choose the bundled extension file: [`stratometriq-extension-1.1.0.vsix`](file:///d:/codeVision/extension/stratometriq-extension-1.1.0.vsix).
+   * Choose the bundled extension file: [`stratometriq-extension-1.3.0.vsix`](file:///d:/codeVision/extension/stratometriq-extension-1.3.0.vsix).
 2. **Reload Window:** Press `Ctrl+Shift+P` ➔ **`Developer: Reload Window`** to ensure all extension registries and AST parsing engines are cleanly initialized.
 3. **Open Dashboard:** Click the **StrataMetriq** icon in your VS Code Activity Bar, or launch the command palette (`Ctrl+Shift+P`) and execute: **`StrataMetriq: Open Dashboard`**.
 4. **Scan Your Workspace:** Click the glowing **Run Deep Analysis** button at the top right of the dashboard. StrataMetriq will instantly parse your codebase and generate your interactive architectural map!
@@ -222,7 +222,13 @@ This dual-branch pipeline ensures that structural flaws (like circular dependenc
 
 ## 4. Complete Feature Manual & User Guide
 
-### 4.1 Pre-Deployment Safety Audit (9-Point Checklist)
+### 4.1 Full-Stack Polyglot Architecture Support (NEW in v1.3.0)
+StrataMetriq v1.3.0 natively analyzes multi-language repositories without requiring external plugins or language interpreters:
+* **Supported Languages:** Python (`.py`), Java (`.java`), Go (`.go`), C# (`.cs`), JavaScript/TypeScript (`.js`, `.ts`, `.jsx`, `.tsx`), plus Ruby (`.rb`), PHP (`.php`), Rust (`.rs`), C++ (`.cpp`), C (`.c`), and header files (`.h`).
+* **Cross-Stack Vertical Flow:** Automatically links frontend client requests (`fetch('/api/orders')`) directly to backend API controllers (e.g., Python FastAPI `@app.get("/api/orders")` or Java Spring Boot `@GetMapping("/api/orders")`) and down to underlying database tables (`orders_table`).
+* **Language-Aware Safety Audits:** Evaluates all 13 Pre-Deployment Safety Audit categories across polyglot files, correctly recognizing language-specific syntax such as `#` comments and active debug calls like `print()`, `System.out.println()`, or `fmt.Println()`.
+
+### 4.2 Pre-Deployment Safety Audit (9-Point Checklist)
 Stop critical vulnerabilities, debugging artifacts, and messy code before committing to git or deploying to production. Every file is evaluated against a rigorous **9-point safety checklist**:
 
 * **🔑 Hardcoded Credentials:** Catches leaked API keys, AWS secrets, JWTs, bearer tokens, passwords, database connection strings (`mongodb://`, `postgres://`, `mysql://`), localhost URLs, and hardcoded IPs. 
@@ -650,7 +656,7 @@ npm run package
 npx @vscode/vsce package
 cd ..
 ```
-This generates the final installable artifact: **`extension/stratometriq-extension-1.1.0.vsix`**.
+This generates the final installable artifact: **`stratometriq-extension-1.3.0.vsix`**.
 
 ---
 
@@ -760,7 +766,7 @@ When caught, StrataMetriq will instantly highlight the custom vulnerability insi
 * **Shared Data Contracts & Interfaces:** [`shared/src/index.ts`](file:///d:/codeVision/shared/src/index.ts)
 * **Dashboard React UI Hub:** [`dashboard/src/App.tsx`](file:///d:/codeVision/dashboard/src/App.tsx)
 * **Dashboard Styling & Grid Layouts:** [`dashboard/src/App.css`](file:///d:/codeVision/dashboard/src/App.css)
-* **Bundled VSIX Package:** [`extension/stratometriq-extension-1.1.0.vsix`](file:///d:/codeVision/extension/stratometriq-extension-1.1.0.vsix)
+* **Bundled VSIX Package:** [`extension/stratometriq-extension-1.3.0.vsix`](file:///d:/codeVision/extension/stratometriq-extension-1.3.0.vsix)
 
 ---
-*StrataMetriq v1.1.0 — Architecture Intelligence & Pre-Deployment Safety in VS Code.*
+*StrataMetriq v1.3.0 — Architecture Intelligence & Pre-Deployment Safety in VS Code.*

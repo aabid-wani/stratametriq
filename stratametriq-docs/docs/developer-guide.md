@@ -51,4 +51,4 @@ npm run package
 npx @vscode/vsce package
 cd ..
 ```
-This generates the final installable artifact: **`extension/stratometriq-extension-1.1.0.vsix`**.
+This generates the final installable artifact: **`stratometriq-extension-1.3.0.vsix`**.

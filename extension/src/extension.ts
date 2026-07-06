@@ -29,14 +29,51 @@ export function activate(context: vscode.ExtensionContext) {
             return;
           case 'openFile':
             try {
-              vscode.workspace.openTextDocument(vscode.Uri.file(message.filePath)).then(doc => {
-                const options: vscode.TextDocumentShowOptions = {};
-                if (typeof message.line === 'number' && message.line > 0) {
-                  const pos = new vscode.Position(message.line - 1, 0);
-                  options.selection = new vscode.Range(pos, pos);
-                  options.selectionRevealType = vscode.TextEditorSelectionRevealType.InCenterIfOutsideViewport;
-                }
-                vscode.window.showTextDocument(doc, options);
+              const targetPath = message.filePath;
+              const lineNum = Number(message.line) || 1;
+              if (!targetPath) return;
+
+              const openAndReveal = (doc: vscode.TextDocument) => {
+                const pos = new vscode.Position(Math.max(0, lineNum - 1), 0);
+                const range = new vscode.Range(pos, pos);
+                const options: vscode.TextDocumentShowOptions = {
+                  preview: false,
+                  selection: range,
+                  viewColumn: vscode.ViewColumn.One
+                };
+                vscode.window.showTextDocument(doc, options).then(editor => {
+                  if (editor) {
+                    editor.selection = new vscode.Selection(pos, pos);
+                    editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+                    setTimeout(() => {
+                      editor.selection = new vscode.Selection(pos, pos);
+                      editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+                    }, 100);
+                    setTimeout(() => {
+                      editor.selection = new vscode.Selection(pos, pos);
+                      editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+                    }, 300);
+                  }
+                }, err => {
+                  vscode.window.showErrorMessage(`Error showing document ${targetPath}: ${err}`);
+                });
+              };
+
+              vscode.workspace.openTextDocument(vscode.Uri.file(targetPath)).then(doc => {
+                openAndReveal(doc);
+              }, err => {
+                const basename = targetPath.replace(/\\/g, '/').split('/').pop() || '';
+                vscode.workspace.findFiles(`**/${basename}`, null, 1).then(files => {
+                  if (files && files.length > 0) {
+                    vscode.workspace.openTextDocument(files[0]).then(doc => {
+                      openAndReveal(doc);
+                    });
+                  } else {
+                    vscode.window.showErrorMessage(`Could not open file: ${targetPath}`);
+                  }
+                }, findErr => {
+                  vscode.window.showErrorMessage(`Could not find file ${basename} in workspace.`);
+                });
               });
             } catch (err) {
               vscode.window.showErrorMessage(`Failed to open file: ${message.filePath}`);
@@ -47,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
             // Trigger actual scan
             const scanner = new Scanner();
             const excludePattern = '{**/node_modules/**,**/.git/**,**/dist/**,**/build/**,**/.next/**,**/out/**,**/vendor/**,**/coverage/**,**/.cache/**,**/*.min.js,**/*.bundle.js,**/*.map}';
-            vscode.workspace.findFiles('**/*.{js,ts,jsx,tsx}', excludePattern, 2000).then(async (files) => {
+            vscode.workspace.findFiles('**/*.{js,ts,jsx,tsx,py,java,go,cs,rb,php,rs,cpp,c,h}', excludePattern, 5000).then(async (files) => {
               let processedCount = 0;
               for (const file of files) {
                 try {

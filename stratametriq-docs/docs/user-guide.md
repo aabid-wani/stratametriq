@@ -141,6 +141,33 @@ This dual-branch pipeline ensures that structural flaws (like circular dependenc
 
 ---
 
+## 🌐 Full-Stack Polyglot Architecture Support
+
+StrataMetriq v1.3.0 natively analyzes multi-language repositories without requiring external plugins or language interpreters:
+* **Supported Languages:** Python (`.py`), Java (`.java`), Go (`.go`), C# (`.cs`), JavaScript/TypeScript (`.js`, `.ts`, `.jsx`, `.tsx`), plus Ruby (`.rb`), PHP (`.php`), Rust (`.rs`), C++ (`.cpp`), C (`.c`), and header files (`.h`).
+* **Cross-Stack Vertical Flow:** Automatically links frontend client requests (`fetch('/api/orders')`) directly to backend API controllers (e.g., Python FastAPI `@app.get("/api/orders")` or Java Spring Boot `@GetMapping("/api/orders")`) and down to underlying database tables (`orders_table`).
+* **Language-Aware Safety Audits:** Evaluates all 13 Pre-Deployment Safety Audit categories across polyglot files, correctly recognizing language-specific syntax such as `#` comments and active debug calls like `print()`, `System.out.println()`, or `fmt.Println()`.
+
+---
+
+## 📦 Quick Start: Install from VSIX & Launch Dashboard
+
+The following steps demonstrate how to install the extension in VS Code and initiate analysis:
+
+1. **Install from VSIX:**
+   * Open VS Code and press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS).
+   * Type and select **`Extensions: Install from VSIX...`**.
+   * Choose the bundled file: **`stratometriq-extension-1.3.0.vsix`**.
+2. **Reload VS Code:**
+   * Run the command **`Developer: Reload Window`** to activate the latest scanner engine.
+3. **Launch Dashboard:**
+   * Open the Command Palette (`Ctrl+Shift+P`) and run:
+     👉 **`StrataMetriq: Open Dashboard`**
+4. **Run Analysis:**
+   * Click the **⚡ Run Deep Analysis** button at the top right of the dashboard to trigger the AST & heuristic pipeline!
+
+---
+
 ## 1. 🛡️ Pre-Deployment Safety Audit (9-Point Checklist)
 Stop critical vulnerabilities, debugging artifacts, and messy code before committing to git or deploying to production. Every file is evaluated against a rigorous **9-point safety checklist**:
 
