@@ -396,6 +396,85 @@ Stop critical vulnerabilities, debugging artifacts, and messy code before commit
   
   ![StrataMetriq Dev Imports Dashboard Preview](./dev-imports-dashboard.png)
 
+* **🐢 Memory Leaks & SPA Timers:** Detects active timers (`setInterval`, `setTimeout`) or unremoved event listeners inside React `useEffect` hooks and lifecycle callbacks that lack a proper cleanup function.
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ MEDIUM RISK: Uncleared Timer in useEffect causes Memory Leaks & State Errors on Unmount
+  useEffect(() => {
+    setInterval(() => {
+      fetchLatestData();
+    }, 5000); // Missing clearInterval in return callback!
+  }, []);
+
+  // ✅ SAFE: Properly Cleaned Up Timer in useEffect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      fetchLatestData();
+    }, 5000);
+    return () => clearInterval(timer); // Perfectly safe!
+  }, []);
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq flags uncleaned timers and event subscriptions in components like `SectionView.jsx` (`MEDIUM [Line 108] Memory Leaks / SPA Timers: Timer or event...`) and `AddSection.js` (`MEDIUM [Line 159] Memory Leaks / SPA Timers: Timer or event...`) under the **Memory Leaks** tab:
+  
+  ![StrataMetriq Memory Leaks Dashboard Preview](./memory-leaks-dashboard.png)
+
+* **🔐 Insecure Cryptography:** Flags weak hashing algorithms (`md5`, `sha1`), legacy ciphers (`rc4`, `des`), or predictable random generators (`Math.random()`) used for sensitive security tokens or passwords.
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ HIGH RISK: Weak Crypto & Predictable Randomness
+  const crypto = require("crypto");
+  const weakHash = crypto.createHash("md5").update(password).digest("hex"); // MD5 is vulnerable to collision attacks!
+  const resetToken = Math.random().toString(36).substring(2); // Math.random is NOT cryptographically secure!
+
+  // ✅ SAFE: Modern Cryptography & Secure Key Derivation
+  const secureHash = crypto.createHash("sha256").update(data).digest("hex");
+  const secureToken = crypto.randomBytes(32).toString("hex"); // Cryptographically random!
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq flags weak cryptographic practices in production bundles like `787.c10c65b6.chunk.js` (`HIGH [Line 1] Insecure Cryptography: Detected weak crytograp...`) and `513.ef3a051a.chunk.js` (`HIGH [Line 1] Insecure Cryptography: Detected weak crytograp...`) under the **Insecure Crypto** tab:
+  
+  ![StrataMetriq Insecure Crypto Dashboard Preview](./insecure-crypto-dashboard.png)
+
+* **💉 SQL & NoSQL Injection:** Detects raw string concatenation, interpolated template literals, or unvalidated user inputs passed directly into database execution queries (`query()`, `execute()`, `find()`, `$where`).
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```javascript
+  // ❌ HIGH RISK: Raw String Concatenation in SQL / NoSQL Query
+  const userEmail = req.body.email;
+  const query = "SELECT * FROM users WHERE email = '" + userEmail + "'"; // Vulnerable to SQL Injection!
+  db.query(`SELECT * FROM orders WHERE id = ${req.params.id}`); // Vulnerable template literal!
+
+  // ✅ SAFE: Parameterized Queries & Prepared Statements
+  const safeQuery = "SELECT * FROM users WHERE email = ?";
+  db.query(safeQuery, [userEmail]); // Parameterized & safe against SQLi!
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq flags database injection vulnerabilities in files like `StudentAttendanceList.jsx` (`HIGH [Line 180] SQL / NoSQL Injection: Raw string concatenati...`) and `contact.controller.js` (`HIGH [Line 130] SQL / NoSQL Injection: Raw string concatenati...`) under the **SQL Injection** tab:
+  
+  ![StrataMetriq SQL Injection Dashboard Preview](./sql-injection-dashboard.png)
+
+* **🌐 XSS (Cross-Site Scripting) Risks:** Detects unvalidated DOM execution and bypasses of React's built-in escaping, such as `dangerouslySetInnerHTML`, `eval()`, `document.write()`, `innerHTML`, or unvalidated URL protocols (`javascript:...`).
+  
+  **💡 Real-World Code Example (What is Flagged vs. What is Safely Ignored):**
+  ```jsx
+  // ❌ HIGH RISK: Unsanitized DOM Execution & Dangerous HTML Injection
+  const userContent = req.query.content;
+  <div dangerouslySetInnerHTML={{ __html: userContent }} /> // Vulnerable to DOM XSS!
+  document.getElementById("output").innerHTML = location.hash; // Direct XSS injection!
+
+  // ✅ SAFE: React Automatic Escaping & Sanitized DOM Rendering
+  import DOMPurify from "dompurify";
+  <div>{userContent}</div> // React automatically escapes strings by default!
+  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(userContent) }} /> // Sanitized & safe!
+  ```
+  **📸 Interactive Dashboard Detection:**
+  When caught, StrataMetriq flags unvalidated DOM manipulations in frontend components like `Home.jsx` (`HIGH [Line 802] XSS DOM Risks: Unsanitized DOM execution d...`) and `announcement.jsx` (`HIGH [Line 101] XSS DOM Risks: Unsanitized DOM execution d...`) under the **XSS Risks** tab:
+  
+  ![StrataMetriq XSS Risks Dashboard Preview](./xss-risks-dashboard.png)
+
 > [!TIP]
 > **🔮 Want to Check for More Features or Custom Keywords?**
 > Yes! You can easily add unlimited custom rules (such as **Insecure Cryptography**, **SQL Injection**, **XSS Risks**, **Memory Leaks**, or company-specific keywords) to StrataMetriq's modular engine! 

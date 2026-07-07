@@ -44,8 +44,11 @@ export class Scanner {
       try {
         const pkg = JSON.parse(sourceText);
         const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}), ...(pkg.peerDependencies || {}) };
+        const ignoredPrefixes = ['@types/', '@docusaurus/', '@mdx-js/', '@tsconfig/', '@vitejs/', '@eslint/', '@babel/'];
+        const ignoredSuffixes = ['-loader', '-plugin', '-preset', '-cli', '-config', '-theme'];
+        const ignoredExact = ['typescript', 'vite', 'esbuild', 'oxlint', 'docusaurus', 'clsx', 'prism-react-renderer', 'eslint', 'prettier', 'jest', 'mocha', 'webpack', 'rollup', 'babel', 'nodemon', 'ts-node', 'tsx', 'concurrently', 'husky', 'lint-staged', 'shx', 'rimraf', 'cross-env'];
         for (const dep of Object.keys(deps)) {
-          if (!dep.startsWith('@types/') && !['typescript', 'vite', 'esbuild', 'oxlint', 'docusaurus', 'clsx', 'prism-react-renderer'].includes(dep)) {
+          if (!ignoredPrefixes.some(p => dep.startsWith(p)) && !ignoredSuffixes.some(s => dep.endsWith(s)) && !ignoredExact.includes(dep)) {
             this.declaredDependencies.set(dep, { file: filePath, type: 'npm' });
           }
         }
@@ -64,13 +67,6 @@ export class Scanner {
         const clean = line.split(/[=<>~#]/)[0].trim();
         if (clean && /^[a-zA-Z0-9_-]+$/.test(clean)) {
           this.declaredDependencies.set(clean, { file: filePath, type: 'python' });
-        }
-      }
-    } else if (!filePath.endsWith('.json') && !filePath.endsWith('.txt') && !filePath.endsWith('.lock') && !filePath.endsWith('.yaml') && !filePath.endsWith('.sum') && !filePath.endsWith('.xml') && !filePath.endsWith('.md')) {
-      for (const dep of this.declaredDependencies.keys()) {
-        const depBase = dep.startsWith('@') ? dep.split('/').slice(0, 2).join('/') : dep.split('/')[0];
-        if (sourceText.includes(depBase) || sourceText.includes(dep)) {
-          this.usedDependencies.add(dep);
         }
       }
     }
@@ -344,6 +340,33 @@ export class Scanner {
           type: 'imports'
         });
       }
+    } else if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      let targetId = node.moduleSpecifier.text;
+      if (!targetId.startsWith('.')) {
+        const targetPkg = targetId.startsWith('@') ? targetId.split('/').slice(0, 2).join('/') : targetId.split('/')[0];
+        this.usedDependencies.add(targetPkg);
+        this.usedDependencies.add(targetId);
+      }
+      this.graph.edges.push({
+        source: currentFilePath.toLowerCase(),
+        target: targetId.toLowerCase(),
+        type: 'imports'
+      });
+    } else if (ts.isCallExpression(node)) {
+      const callText = node.expression.getText(sourceFile);
+      if ((callText === 'require' || node.expression.kind === ts.SyntaxKind.ImportKeyword) && node.arguments.length > 0 && ts.isStringLiteral(node.arguments[0])) {
+        let targetId = node.arguments[0].text;
+        if (!targetId.startsWith('.')) {
+          const targetPkg = targetId.startsWith('@') ? targetId.split('/').slice(0, 2).join('/') : targetId.split('/')[0];
+          this.usedDependencies.add(targetPkg);
+          this.usedDependencies.add(targetId);
+        }
+        this.graph.edges.push({
+          source: currentFilePath.toLowerCase(),
+          target: targetId.toLowerCase(),
+          type: 'imports'
+        });
+      }
     }
 
     // 2. Exports
@@ -605,8 +628,18 @@ export class Scanner {
 
     this.graph.cycles = cycles;
 
+    for (const edge of this.graph.edges) {
+      if (edge.type === 'imports' && edge.target) {
+        const target = edge.target;
+        const targetPkg = target.startsWith('@') ? target.split('/').slice(0, 2).join('/') : target.split('/')[0];
+        this.usedDependencies.add(targetPkg);
+        this.usedDependencies.add(target);
+      }
+    }
+
     const unusedPackages: { name: string; file: string; type?: string }[] = [];
     for (const [dep, info] of this.declaredDependencies.entries()) {
+      if (info.type === 'workspace') continue;
       if (!this.usedDependencies.has(dep)) {
         unusedPackages.push({
           name: dep,

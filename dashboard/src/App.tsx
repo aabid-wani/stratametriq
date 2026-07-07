@@ -34,7 +34,15 @@ function App() {
         const rawEdges = message.data.edges || [];
         const rawDuplicates = message.data.duplicates || [];
         const rawCycles = message.data.cycles || [];
-        const rawUnused = message.data.unusedPackages || [];
+        const rawUnused = (message.data.unusedPackages || []).filter((pkg: any) => {
+          if (pkg.type === 'workspace') return false;
+          const name = (pkg.name || '').toLowerCase();
+          if (name.startsWith('@types/') || name.startsWith('@docusaurus/') || name.startsWith('@mdx-js/') || name.startsWith('@tsconfig/') || name.startsWith('@vitejs/') || name.startsWith('@eslint/')) return false;
+          if (name.endsWith('-loader') || name.endsWith('-plugin') || name.endsWith('-preset') || name.endsWith('-cli') || name.endsWith('-config') || name.endsWith('-theme')) return false;
+          const ignoredExact = ['typescript', 'vite', 'esbuild', 'oxlint', 'docusaurus', 'clsx', 'prism-react-renderer', 'eslint', 'prettier', 'jest', 'mocha', 'webpack', 'rollup', 'babel', 'nodemon', 'ts-node', 'tsx', 'concurrently', 'husky', 'lint-staged', 'shx', 'rimraf', 'cross-env'];
+          if (ignoredExact.includes(name)) return false;
+          return true;
+        });
 
         setNodes(rawNodes);
         setEdges(rawEdges);
@@ -540,7 +548,7 @@ function App() {
     if (repo) {
       steps.push({ step: stepCount++, stage: 'Model / ORM Layer', label: getFileName(repo.name || repo.filePath), sub: 'Data Access & ORM Queries (e.g. Assingment.assignmentsByDates)', type: 'file', filePath: repo.filePath, isOpen: repo.isOpen, icon: '🗄️' });
     } else if (controller) {
-      steps.push({ step: stepCount++, stage: 'Model / ORM Layer', label: `Inline in ${getFileName(controller.name || controller.filePath)}`, sub: 'Direct Model Invocation & SQL Query', type: 'file', filePath: controller.filePath, isOpen: controller.isOpen, icon: '🗄️' });
+      steps.push({ step: stepCount++, stage: 'Model / ORM Layer', label: getFileName(controller.name || controller.filePath), sub: 'Direct Model Invocation & SQL Query', type: 'file', filePath: controller.filePath, isOpen: controller.isOpen, icon: '🗄️' });
     }
 
     // Step 8: Database Table
@@ -938,8 +946,8 @@ function App() {
 
         <div className="unused-deps-list glass-card" style={{ gridColumn: '1 / -1', width: '100%', marginTop: '0.5rem', boxSizing: 'border-box' }}>
           <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span>Unused / Orphaned Dependencies</span>
-            <span style={{ fontSize: '0.7rem', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.15)', padding: '2px 8px', borderRadius: '12px' }}>Pre-Deployment Cleanup</span>
+            <span>Unused / Orphaned Dependencies <span style={{ fontSize: '0.8rem', color: '#fda4af', fontWeight: 'normal' }}>({unusedPackages.length} unused)</span></span>
+            <span style={{ fontSize: '0.75rem', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.15)', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>Total Unused: {unusedPackages.length}</span>
           </h3>
           <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.8rem' }}>Packages installed or declared in dependency manifests (package.json, requirements.txt, etc.) that are never imported or utilized in code:</p>
           {unusedPackages.length === 0 && !scanning ? (
@@ -947,23 +955,32 @@ function App() {
           ) : scanning ? (
             <div className="loading-state">Scanning package manifests and imports...</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
-              {unusedPackages.map((pkg: any, idx: number) => (
-                <div key={idx} style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(244, 63, 94, 0.35)', borderLeft: '4px solid #f43f5e', borderRadius: '6px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 'bold', color: '#fecdd3', fontSize: '0.9rem', fontFamily: 'monospace' }}>📦 {pkg.name}</span>
-                    <span style={{ fontSize: '0.7rem', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.1)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>{pkg.type || 'dep'}</span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>Declared in:</span>
-                    <span className="file-name clickable" onClick={() => handleOpenFile(pkg.file)} style={{ color: '#38bdf8', textDecoration: 'underline', cursor: 'pointer' }}>{getFileName(pkg.file)}</span>
-                    {renderOpenBadge(isFileOpen(pkg.file))}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#fda4af', marginTop: '2px' }}>
-                    ✖ Not imported in any source module. Consider removing to reduce bundle & vulnerability footprint.
-                  </div>
-                </div>
-              ))}
+            <div className="custom-scrollbar" style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '4px', border: '1px solid rgba(244, 63, 94, 0.2)', borderRadius: '6px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ background: 'rgba(244, 63, 94, 0.15)', borderBottom: '1px solid rgba(244, 63, 94, 0.3)', color: '#fecdd3', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <th style={{ padding: '8px 12px', fontWeight: 600 }}>Package Name</th>
+                    <th style={{ padding: '8px 12px', fontWeight: 600 }}>Declared In</th>
+                    <th style={{ padding: '8px 12px', fontWeight: 600, textAlign: 'right' }}>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unusedPackages.map((pkg: any, idx: number) => (
+                    <tr key={idx} style={{ borderBottom: idx === unusedPackages.length - 1 ? 'none' : '1px solid rgba(255, 255, 255, 0.05)', background: idx % 2 === 0 ? 'rgba(15, 23, 42, 0.4)' : 'transparent', transition: 'background 0.2s' }}>
+                      <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontWeight: 'bold', color: '#fecdd3' }}>
+                        📦 {pkg.name}
+                      </td>
+                      <td style={{ padding: '8px 12px', color: '#cbd5e1' }}>
+                        <span className="file-name clickable" onClick={() => handleOpenFile(pkg.file)} style={{ color: '#38bdf8', textDecoration: 'underline', cursor: 'pointer', marginRight: '6px' }}>{getFileName(pkg.file)}</span>
+                        {renderOpenBadge(isFileOpen(pkg.file))}
+                      </td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.15)', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>{pkg.type || 'dep'}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
