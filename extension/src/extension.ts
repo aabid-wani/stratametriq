@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Scanner } from '@stratometriq/scanner';
+import { Scanner } from '@stratametriq/scanner';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('StrataMetriq is now active!');
 
-  let disposable = vscode.commands.registerCommand('stratometriq.start', () => {
+  let disposable = vscode.commands.registerCommand('stratametriq.start', () => {
     const panel = vscode.window.createWebviewPanel(
-      'stratometriqDashboard',
+      'stratametriqDashboard',
       'StrataMetriq Dashboard',
       vscode.ViewColumn.One,
       {

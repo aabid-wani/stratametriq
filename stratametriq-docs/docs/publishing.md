@@ -16,7 +16,7 @@ An icon file (`icon.png`, 128x128 PNG format) is included in the root of the `ex
 
 ## 2. Publisher Account
 * Create a publisher profile on the [Visual Studio Code Marketplace Management Portal](https://marketplace.visualstudio.com/manage).
-* Ensure your `"publisher"` ID in `extension/package.json` matches your marketplace publisher ID (`"stratometriq"`).
+* Ensure your `"publisher"` ID in `extension/package.json` matches your marketplace publisher ID (`"stratametriq"`).
 
 ---
 
@@ -33,10 +33,10 @@ Execute the following commands using the official `@vscode/vsce` CLI tool:
 
 ```bash
 cd extension
-npx @vscode/vsce login stratometriq
+npx @vscode/vsce login stratametriq
 npx @vscode/vsce publish
 ```
 
 :::success Marketplace Verification
-Once published, your extension will be publicly accessible on the VS Code Marketplace under `stratometriq.stratometriq-extension`.
+Once published, your extension will be publicly accessible on the VS Code Marketplace under `stratametriq.stratametriq-extension`.
 :::

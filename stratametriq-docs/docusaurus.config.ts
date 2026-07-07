@@ -11,11 +11,11 @@ const config: Config = {
     v4: true,
   },
 
-  url: 'https://stratometriq.example.com',
+  url: 'https://stratametriq.example.com',
   baseUrl: '/',
 
-  organizationName: 'stratometriq',
-  projectName: 'stratometriq-docs',
+  organizationName: 'stratametriq',
+  projectName: 'stratametriq-docs',
 
   onBrokenLinks: 'warn',
 

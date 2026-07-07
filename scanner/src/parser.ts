@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as path from 'path';
-import { Node, Edge, Graph } from '@stratometriq/shared';
+import { Node, Edge, Graph } from '@stratametriq/shared';
 
 export class Scanner {
   private graph: Graph = { nodes: [], edges: [], duplicates: [] };
@@ -55,7 +55,7 @@ export class Scanner {
         if (pkg.workspaces && Array.isArray(pkg.workspaces)) {
           for (const ws of pkg.workspaces) {
             if (typeof ws === 'string') {
-              const wsName = `@stratometriq/${ws}`;
+              const wsName = `@stratametriq/${ws}`;
               this.declaredDependencies.set(wsName, { file: filePath, type: 'workspace' });
             }
           }
@@ -97,6 +97,18 @@ export class Scanner {
       }
     }
     graphNode.problemCount = graphNode.problems.length;
+
+    // 0. Convention-Based Route Auto-Detection (Next.js App Router / Remix / Nuxt)
+    const nextRouteMatch = normalizedPath.match(/(?:app|pages)\/api\/(.+?)\/(?:route|index)\.(?:ts|js|tsx|jsx)$/i) || normalizedPath.match(/(?:app|pages)\/api\/(.+?)\.(?:ts|js|tsx|jsx)$/i);
+    if (nextRouteMatch && nextRouteMatch[1]) {
+      const apiPath = `/api/${nextRouteMatch[1]}`;
+      const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].filter(m => new RegExp(`\\bexport\\s+(?:async\\s+)?(?:function|const)\\s+${m}\\b`, 'i').test(sourceText));
+      if (methods.length === 0) methods.push('ANY');
+      methods.forEach(m => {
+        const endpoint = `${m} ${apiPath}`;
+        if (!graphNode!.apisCalled!.includes(endpoint)) graphNode!.apisCalled!.push(endpoint);
+      });
+    }
 
     // 1. Debug code (Check lines that aren't comments)
     const lines = sourceText.split(/\r\n|\r|\n|\u2028|\u2029/);
@@ -354,18 +366,30 @@ export class Scanner {
       });
     } else if (ts.isCallExpression(node)) {
       const callText = node.expression.getText(sourceFile);
-      if ((callText === 'require' || node.expression.kind === ts.SyntaxKind.ImportKeyword) && node.arguments.length > 0 && ts.isStringLiteral(node.arguments[0])) {
-        let targetId = node.arguments[0].text;
-        if (!targetId.startsWith('.')) {
-          const targetPkg = targetId.startsWith('@') ? targetId.split('/').slice(0, 2).join('/') : targetId.split('/')[0];
-          this.usedDependencies.add(targetPkg);
-          this.usedDependencies.add(targetId);
+      if ((callText === 'require' || node.expression.kind === ts.SyntaxKind.ImportKeyword) && node.arguments.length > 0) {
+        let targetId = '';
+        const arg = node.arguments[0];
+        if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
+          targetId = arg.text;
+        } else if (ts.isTemplateExpression(arg) || ts.isBinaryExpression(arg)) {
+          // Heuristic resolution for dynamic imports and runtime reflection strings
+          const rawArg = arg.getText(sourceFile).replace(/['"`]/g, '');
+          const match = rawArg.match(/^([\.\/\w\-]+)/);
+          const prefix = match ? match[1] : './dynamic';
+          targetId = `${prefix}/* [Dynamic Bundle]`;
         }
-        this.graph.edges.push({
-          source: currentFilePath.toLowerCase(),
-          target: targetId.toLowerCase(),
-          type: 'imports'
-        });
+        if (targetId) {
+          if (!targetId.startsWith('.')) {
+            const targetPkg = targetId.startsWith('@') ? targetId.split('/').slice(0, 2).join('/') : targetId.split('/')[0];
+            this.usedDependencies.add(targetPkg);
+            this.usedDependencies.add(targetId);
+          }
+          this.graph.edges.push({
+            source: currentFilePath.toLowerCase(),
+            target: targetId.toLowerCase(),
+            type: 'imports'
+          });
+        }
       }
     }
 
@@ -488,6 +512,27 @@ export class Scanner {
       }
     }
 
+    // 8. Dependency Injection & Decorator Wiring (NestJS / Angular / Spring IoC)
+    if (ts.isClassDeclaration(node) && node.name) {
+      const className = node.name.text;
+      node.members.forEach(member => {
+        if (ts.isConstructorDeclaration(member)) {
+          member.parameters.forEach(param => {
+            if (param.type && ts.isTypeReferenceNode(param.type)) {
+              const typeName = param.type.typeName.getText(sourceFile);
+              if (typeName && typeName !== className) {
+                this.graph.edges.push({
+                  source: currentFilePath.toLowerCase(),
+                  target: typeName.toLowerCase(),
+                  type: 'imports'
+                });
+              }
+            }
+          });
+        }
+      });
+    }
+
     ts.forEachChild(node, (n) => this.visitNode(n, currentFilePath, graphNode, sourceFile));
   }
 
@@ -505,9 +550,17 @@ export class Scanner {
         }
         
         if (!found && !this.nodeIds.has(edge.target)) {
+          const matchedNode = this.graph.nodes.find(n => n.name.toLowerCase().replace(/\.[^/.]+$/, '') === edge.target.toLowerCase() || n.name.toLowerCase() === edge.target.toLowerCase());
+          if (matchedNode) {
+            edge.target = matchedNode.id;
+            found = true;
+          }
+        }
+        if (!found && !this.nodeIds.has(edge.target)) {
+          const isDynamic = edge.target.includes('[Dynamic') || edge.target.includes('[DI');
           this.graph.nodes.push({
             id: edge.target,
-            type: 'package',
+            type: isDynamic ? 'module' : 'package',
             name: edge.target.split('/').pop() || edge.target,
             filePath: edge.target
           });

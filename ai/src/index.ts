@@ -1,4 +1,4 @@
-import { Graph, Node } from '@stratometriq/shared';
+import { Graph, Node } from '@stratametriq/shared';
 
 export interface AIProvider {
   ask(prompt: string): Promise<string>;

@@ -1,7 +1,7 @@
 # StrataMetriq: Comprehensive End-to-End User Manual & Technical Architecture Guide (v1.3.0)
 
 > **🌐 Official GitHub Repository:** [https://github.com/aabid-wani/stratametriq](https://github.com/aabid-wani/stratametriq)  
-> **📦 VS Code Marketplace:** `stratometriq.stratometriq-extension`
+> **📦 VS Code Marketplace:** `stratametriq.stratametriq-extension`
 
 Welcome to the authoritative engineering guide and user manual for **StrataMetriq**, an enterprise-grade Visual Studio Code extension designed to deliver **Architecture Intelligence & Pre-Deployment Safety** for full-stack JavaScript and TypeScript codebases. 
 
@@ -46,15 +46,15 @@ StrataMetriq is architected as a clean, decoupled monorepo workspace structured 
 ```mermaid
 graph TD
     subgraph Core Engine Workspaces
-        SHARED["@stratometriq/shared\n(Data Contracts & Graph Interfaces)"]
-        SCANNER["@stratometriq/scanner\n(TypeScript AST Parser & Risk Evaluator)"]
-        AI["@stratometriq/ai\n(Architectural Intelligence & Insights)"]
-        RUNTIME["@stratometriq/runtime\n(Runtime Diagnostics & Utilities)"]
+        SHARED["@stratametriq/shared\n(Data Contracts & Graph Interfaces)"]
+        SCANNER["@stratametriq/scanner\n(TypeScript AST Parser & Risk Evaluator)"]
+        AI["@stratametriq/ai\n(Architectural Intelligence & Insights)"]
+        RUNTIME["@stratametriq/runtime\n(Runtime Diagnostics & Utilities)"]
     end
 
     subgraph Presentation & Editor Integration
         DASHBOARD["dashboard\n(React 19 + Vite + Glassmorphism UI)"]
-        EXT["stratometriq-extension\n(VS Code Extension Host & Webview Bridge)"]
+        EXT["stratametriq-extension\n(VS Code Extension Host & Webview Bridge)"]
     end
 
     SCANNER --> SHARED
@@ -67,12 +67,12 @@ graph TD
 ```
 
 ### Workspace Module Breakdown:
-1. **[`@stratometriq/shared`](file:///d:/codeVision/shared):** The foundational data contract layer. Defines core TypeScript interfaces (`Node`, `Edge`, `Graph`, `DuplicatePair`, `ProductionRisk`) ensuring type safety between the backend AST parser and the frontend React UI.
-2. **[`@stratometriq/scanner`](file:///d:/codeVision/scanner):** The heavy-lifting AST engine powered by Microsoft's `typescript` compiler API. It scans `.ts`, `.tsx`, `.js`, and `.jsx` files, extracts imports/exports, maps Express/HTTP router endpoints, evaluates syntax errors, and runs lexical tokenization for duplicate detection.
-3. **[`@stratometriq/ai`](file:///d:/codeVision/ai):** Provides intelligent heuristic evaluations and architectural recommendations.
-4. **[`@stratometriq/runtime`](file:///d:/codeVision/runtime):** Helper utilities for evaluating runtime execution traces and environment configurations.
+1. **[`@stratametriq/shared`](file:///d:/codeVision/shared):** The foundational data contract layer. Defines core TypeScript interfaces (`Node`, `Edge`, `Graph`, `DuplicatePair`, `ProductionRisk`) ensuring type safety between the backend AST parser and the frontend React UI.
+2. **[`@stratametriq/scanner`](file:///d:/codeVision/scanner):** The heavy-lifting AST engine powered by Microsoft's `typescript` compiler API. It scans `.ts`, `.tsx`, `.js`, and `.jsx` files, extracts imports/exports, maps Express/HTTP router endpoints, evaluates syntax errors, and runs lexical tokenization for duplicate detection.
+3. **[`@stratametriq/ai`](file:///d:/codeVision/ai):** Provides intelligent heuristic evaluations and architectural recommendations.
+4. **[`@stratametriq/runtime`](file:///d:/codeVision/runtime):** Helper utilities for evaluating runtime execution traces and environment configurations.
 5. **[`dashboard`](file:///d:/codeVision/dashboard):** A responsive, high-performance webview built with **React 19**, **Vite 8**, and **@xyflow/react**. It renders dynamic visual trees, glassmorphic inspection cards, and real-time filtering pills. Built as a single-file inline bundle for seamless VS Code embedding.
-6. **[`stratometriq-extension`](file:///d:/codeVision/extension):** The host wrapper that registers VS Code commands (`stratometriq.start`), manages the webview lifecycle, handles bi-directional message passing, and triggers editor tab synchronization.
+6. **[`stratametriq-extension`](file:///d:/codeVision/extension):** The host wrapper that registers VS Code commands (`stratametriq.start`), manages the webview lifecycle, handles bi-directional message passing, and triggers editor tab synchronization.
 
 ---
 
@@ -213,7 +213,7 @@ This dual-branch pipeline ensures that structural flaws (like circular dependenc
 1. **Install the Extension:** 
    * Open Visual Studio Code and press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS).
    * Type and select **`Extensions: Install from VSIX...`**.
-   * Choose the bundled extension file: [`stratometriq-extension-1.3.0.vsix`](file:///d:/codeVision/extension/stratometriq-extension-1.3.0.vsix).
+   * Choose the bundled extension file: [`stratametriq-extension-1.3.0.vsix`](file:///d:/codeVision/extension/stratametriq-extension-1.3.0.vsix).
 2. **Reload Window:** Press `Ctrl+Shift+P` ➔ **`Developer: Reload Window`** to ensure all extension registries and AST parsing engines are cleanly initialized.
 3. **Open Dashboard:** Click the **StrataMetriq** icon in your VS Code Activity Bar, or launch the command palette (`Ctrl+Shift+P`) and execute: **`StrataMetriq: Open Dashboard`**.
 4. **Scan Your Workspace:** Click the glowing **Run Deep Analysis** button at the top right of the dashboard. StrataMetriq will instantly parse your codebase and generate your interactive architectural map!
@@ -713,7 +713,7 @@ npm install
 ```
 
 ### Step 2: Compile All Workspaces
-To compile the TypeScript source code across `@stratometriq/shared`, `@stratometriq/scanner`, `@stratometriq/ai`, and `@stratometriq/runtime`, run:
+To compile the TypeScript source code across `@stratametriq/shared`, `@stratametriq/scanner`, `@stratametriq/ai`, and `@stratametriq/runtime`, run:
 ```bash
 npm run build
 ```
@@ -735,7 +735,7 @@ npm run package
 npx @vscode/vsce package
 cd ..
 ```
-This generates the final installable artifact: **`stratometriq-extension-1.3.0.vsix`**.
+This generates the final installable artifact: **`stratametriq-extension-1.3.0.vsix`**.
 
 ---
 
@@ -746,13 +746,13 @@ When publishing StrataMetriq to the public **Visual Studio Code Marketplace** or
 1. **Extension Icon:** An icon file (`icon.png`, 128x128 PNG format) is included in the root of the `extension/` directory and referenced in `extension/package.json` under `"icon": "icon.png"`.
 2. **Publisher Account:**
    * Create a publisher profile on the [Visual Studio Code Marketplace Management Portal](https://marketplace.visualstudio.com/manage).
-   * Ensure your `"publisher"` ID in `extension/package.json` matches your marketplace publisher ID (`"stratometriq"`).
+   * Ensure your `"publisher"` ID in `extension/package.json` matches your marketplace publisher ID (`"stratametriq"`).
 3. **Personal Access Token (PAT):**
    * Generate an Azure DevOps Personal Access Token with **Marketplace (Publish)** scopes.
 4. **Login & Publish via CLI:**
    ```bash
    cd extension
-   npx @vscode/vsce login stratometriq
+   npx @vscode/vsce login stratametriq
    npx @vscode/vsce publish
    ```
 
@@ -822,7 +822,7 @@ StrataMetriq is built on an extensible, modular AST heuristic rule engine. Rathe
 | **🔐 CORS Misconfigurations** | Permissive wildcard origins `cors({ origin: '*' })` or disabled CSRF protections | Secures API endpoints against unauthorized cross-origin API hijacking. |
 
 ### 🛠️ How Custom Rules Work in Architecture:
-Because StrataMetriq's `@stratometriq/scanner` module decouples file reading from token evaluation, adding a custom rule simply requires appending a rule schema to the scanner pipeline:
+Because StrataMetriq's `@stratametriq/scanner` module decouples file reading from token evaluation, adding a custom rule simply requires appending a rule schema to the scanner pipeline:
 ```typescript
 // Example: Adding a custom security rule for MD5/SHA1 detection
 const customCryptoRule = {
@@ -845,7 +845,7 @@ When caught, StrataMetriq will instantly highlight the custom vulnerability insi
 * **Shared Data Contracts & Interfaces:** [`shared/src/index.ts`](file:///d:/codeVision/shared/src/index.ts)
 * **Dashboard React UI Hub:** [`dashboard/src/App.tsx`](file:///d:/codeVision/dashboard/src/App.tsx)
 * **Dashboard Styling & Grid Layouts:** [`dashboard/src/App.css`](file:///d:/codeVision/dashboard/src/App.css)
-* **Bundled VSIX Package:** [`extension/stratometriq-extension-1.3.0.vsix`](file:///d:/codeVision/extension/stratometriq-extension-1.3.0.vsix)
+* **Bundled VSIX Package:** [`extension/stratametriq-extension-1.3.0.vsix`](file:///d:/codeVision/extension/stratametriq-extension-1.3.0.vsix)
 
 ---
 *StrataMetriq v1.3.0 — Architecture Intelligence & Pre-Deployment Safety in VS Code.*

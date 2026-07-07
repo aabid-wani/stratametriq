@@ -25,7 +25,7 @@ npm install
 ---
 
 ## Step 2: Compile All Workspaces
-To compile the TypeScript source code across `@stratometriq/shared`, `@stratometriq/scanner`, `@stratometriq/ai`, and `@stratometriq/runtime`, run:
+To compile the TypeScript source code across `@stratametriq/shared`, `@stratametriq/scanner`, `@stratametriq/ai`, and `@stratametriq/runtime`, run:
 ```bash
 npm run build
 ```
@@ -51,4 +51,4 @@ npm run package
 npx @vscode/vsce package
 cd ..
 ```
-This generates the final installable artifact: **`stratometriq-extension-1.3.0.vsix`**.
+This generates the final installable artifact: **`stratametriq-extension-1.3.0.vsix`**.

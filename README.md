@@ -1,7 +1,7 @@
 # StrataMetriq 📐
 *Architecture Intelligence & Pre-Deployment Safety in VS Code*
 
-[![GitHub](https://img.shields.io/badge/GitHub-aabid--wani%2Fstratametriq-181717?style=flat&logo=github)](https://img.shields.io/badge/GitHub-aabid--wani%2Fstratametriq-181717?style=flat&logo=github) [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-stratometriq-007ACC?style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/)  
+[![GitHub](https://img.shields.io/badge/GitHub-aabid--wani%2Fstratametriq-181717?style=flat&logo=github)](https://img.shields.io/badge/GitHub-aabid--wani%2Fstratametriq-181717?style=flat&logo=github) [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-stratametriq-007ACC?style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/)  
 **🌐 Official GitHub Repository:** [https://github.com/aabid-wani/stratametriq](https://github.com/aabid-wani/stratametriq)
 
 **StrataMetriq** is an enterprise-grade VS Code extension designed to act as an advanced architectural diagnostic tool for full-stack polyglot codebases (JavaScript, TypeScript, Python, Java, Go, C#, Ruby, PHP, Rust, C++). It transforms abstract technical debt into visual graphs, maps out end-to-end API request lifecycles across different backend languages, and automatically enforces a strict pre-deployment safety audit before code ever reaches production.
@@ -97,7 +97,7 @@ StrataMetriq is structured as a high-performance TypeScript monorepo:
 1. **Install from VSIX**:
    * Open VS Code and press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS).
    * Type and select **`Extensions: Install from VSIX...`**.
-   * Choose the bundled file: **`stratometriq-extension-1.3.0.vsix`**.
+   * Choose the bundled file: **`stratametriq-extension-1.3.0.vsix`**.
 2. **Reload VS Code**:
    * Run the command **`Developer: Reload Window`** to activate the latest scanner engine.
 3. **Launch Dashboard**:
@@ -131,4 +131,4 @@ npm run build
 cd ../extension
 npm run build
 ```
-*Your newly compiled extension will be output as `stratometriq-extension-1.3.0.vsix` inside the `extension/` directory!*
+*Your newly compiled extension will be output as `stratametriq-extension-1.3.0.vsix` inside the `extension/` directory!*

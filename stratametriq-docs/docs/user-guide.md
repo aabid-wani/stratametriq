@@ -157,7 +157,7 @@ The following steps demonstrate how to install the extension in VS Code and init
 1. **Install from VSIX:**
    * Open VS Code and press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS).
    * Type and select **`Extensions: Install from VSIX...`**.
-   * Choose the bundled file: **`stratometriq-extension-1.3.0.vsix`**.
+   * Choose the bundled file: **`stratametriq-extension-1.3.0.vsix`**.
 2. **Reload VS Code:**
    * Run the command **`Developer: Reload Window`** to activate the latest scanner engine.
 3. **Launch Dashboard:**
@@ -633,7 +633,7 @@ StrataMetriq is built on an extensible, modular AST heuristic rule engine. Rathe
 | **🔐 CORS Misconfigurations** | Permissive wildcard origins `cors({ origin: '*' })` or disabled CSRF protections | Secures API endpoints against unauthorized cross-origin API hijacking. |
 
 ### 🛠️ How Custom Rules Work in Architecture:
-Because StrataMetriq's `@stratometriq/scanner` module decouples file reading from token evaluation, adding a custom rule simply requires appending a rule schema to the scanner pipeline:
+Because StrataMetriq's `@stratametriq/scanner` module decouples file reading from token evaluation, adding a custom rule simply requires appending a rule schema to the scanner pipeline:
 ```typescript
 // Example: Adding a custom security rule for MD5/SHA1 detection
 const customCryptoRule = {
