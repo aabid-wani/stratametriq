@@ -5,7 +5,10 @@ import { Node, Edge, Graph } from '@stratometriq/shared';
 export class Scanner {
   private graph: Graph = { nodes: [], edges: [], duplicates: [] };
   private nodeIds = new Set<string>();
-  private globalFunctions: { filePath: string; tokens: Set<string> }[] = [];
+  private globalFunctions: { filePath: string; name: string; startLine: number; tokens: Set<string> }[] = [];
+  private fileTokenSets = new Map<string, Set<string>>();
+  private declaredDependencies = new Map<string, { file: string; type: string }>();
+  private usedDependencies = new Set<string>();
 
   constructor() {}
 
@@ -29,12 +32,47 @@ export class Scanner {
     if (!graphNode) {
       graphNode = {
         id: normalizedPath,
-        type: 'file',
-        name: filePath.replace(/\\/g, '/').split('/').pop() || filePath,
+        type: isJsOrTs || isJsx || ['.py', '.java', '.go', '.cs', '.php', '.rb', '.rs', '.cpp', '.h'].includes(ext) ? 'module' : 'file',
+        name: path.basename(filePath),
         filePath: filePath // keep original casing for UI and opening
       };
       this.graph.nodes.push(graphNode);
       this.nodeIds.add(normalizedPath);
+    }
+    
+    if (path.basename(filePath).toLowerCase() === 'package.json') {
+      try {
+        const pkg = JSON.parse(sourceText);
+        const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}), ...(pkg.peerDependencies || {}) };
+        for (const dep of Object.keys(deps)) {
+          if (!dep.startsWith('@types/') && !['typescript', 'vite', 'esbuild', 'oxlint', 'docusaurus', 'clsx', 'prism-react-renderer'].includes(dep)) {
+            this.declaredDependencies.set(dep, { file: filePath, type: 'npm' });
+          }
+        }
+        if (pkg.workspaces && Array.isArray(pkg.workspaces)) {
+          for (const ws of pkg.workspaces) {
+            if (typeof ws === 'string') {
+              const wsName = `@stratometriq/${ws}`;
+              this.declaredDependencies.set(wsName, { file: filePath, type: 'workspace' });
+            }
+          }
+        }
+      } catch (e) {}
+    } else if (path.basename(filePath).toLowerCase() === 'requirements.txt') {
+      const lines = sourceText.split(/\r?\n/);
+      for (const line of lines) {
+        const clean = line.split(/[=<>~#]/)[0].trim();
+        if (clean && /^[a-zA-Z0-9_-]+$/.test(clean)) {
+          this.declaredDependencies.set(clean, { file: filePath, type: 'python' });
+        }
+      }
+    } else if (!filePath.endsWith('.json') && !filePath.endsWith('.txt') && !filePath.endsWith('.lock') && !filePath.endsWith('.yaml') && !filePath.endsWith('.sum') && !filePath.endsWith('.xml') && !filePath.endsWith('.md')) {
+      for (const dep of this.declaredDependencies.keys()) {
+        const depBase = dep.startsWith('@') ? dep.split('/').slice(0, 2).join('/') : dep.split('/')[0];
+        if (sourceText.includes(depBase) || sourceText.includes(dep)) {
+          this.usedDependencies.add(dep);
+        }
+      }
     }
     
     graphNode.exportsCount = 0;
@@ -200,14 +238,50 @@ export class Scanner {
       }
     }
 
-    // Module-level tokenization for duplicates (capped for large project performance)
-    if (sourceText.length > 50 && this.globalFunctions.length < 500) {
-      const matches = sourceText.match(/[a-zA-Z0-9]+/g);
-      if (matches && matches.length > 10) {
-        this.globalFunctions.push({
-          filePath: filePath,
-          tokens: new Set(matches.slice(0, 400))
-        });
+    // Store overall file token set for calculating total file overlap percentage
+    if (sourceText.length > 50) {
+      const allTokens = sourceText.match(/[a-zA-Z0-9_]{3,}/g);
+      if (allTokens && allTokens.length > 10) {
+        this.fileTokenSets.set(filePath, new Set(allTokens.slice(0, 1500)));
+      }
+    }
+
+    // Function & Block level tokenization for precise duplicate logic detection
+    if (sourceText.length > 50 && this.globalFunctions.length < 1000) {
+      const lines = sourceText.split(/\r?\n/);
+      const funcRegex = /(?:function\s+([a-zA-Z0-9_]+)|(?:const|let|var)\s+([a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>|def\s+([a-zA-Z0-9_]+)|(?:public|private|protected|static|async)\s+(?:[a-zA-Z0-9_<>[\]]+\s+)+([a-zA-Z0-9_]+)\s*\([^)]*\)|func\s+(?:\([^)]+\)\s*)?([a-zA-Z0-9_]+)|class\s+([a-zA-Z0-9_]+))/;
+      let foundFunc = false;
+      for (let lIdx = 0; lIdx < lines.length; lIdx++) {
+        const line = lines[lIdx];
+        const match = line.match(funcRegex);
+        if (match) {
+          foundFunc = true;
+          const funcName = match[1] || match[2] || match[3] || match[4] || match[5] || match[6] || `Block L${lIdx + 1}`;
+          const blockLines = lines.slice(lIdx, Math.min(lines.length, lIdx + 40)).join(' ');
+          const tokens = blockLines.match(/[a-zA-Z0-9_]{3,}/g);
+          if (tokens && tokens.length >= 15) {
+            this.globalFunctions.push({
+              filePath: filePath,
+              name: funcName,
+              startLine: lIdx + 1,
+              tokens: new Set(tokens.slice(0, 300))
+            });
+          }
+        }
+      }
+      if (!foundFunc && lines.length > 15) {
+        for (let lIdx = 0; lIdx < lines.length; lIdx += 20) {
+          const blockLines = lines.slice(lIdx, Math.min(lines.length, lIdx + 30)).join(' ');
+          const tokens = blockLines.match(/[a-zA-Z0-9_]{3,}/g);
+          if (tokens && tokens.length >= 15) {
+            this.globalFunctions.push({
+              filePath: filePath,
+              name: `lines ${lIdx + 1}-${Math.min(lines.length, lIdx + 30)}`,
+              startLine: lIdx + 1,
+              tokens: new Set(tokens.slice(0, 300))
+            });
+          }
+        }
       }
     }
 
@@ -257,6 +331,10 @@ export class Scanner {
         if (targetId.startsWith('.')) {
           const dir = path.dirname(currentFilePath);
           targetId = path.resolve(dir, targetId).replace(/\\/g, '/');
+        } else {
+          const targetPkg = targetId.startsWith('@') ? targetId.split('/').slice(0, 2).join('/') : targetId.split('/')[0];
+          this.usedDependencies.add(targetPkg);
+          this.usedDependencies.add(targetId);
         }
         targetId = targetId.toLowerCase();
 
@@ -406,7 +484,7 @@ export class Scanner {
         if (!found && !this.nodeIds.has(edge.target)) {
           this.graph.nodes.push({
             id: edge.target,
-            type: 'module',
+            type: 'package',
             name: edge.target.split('/').pop() || edge.target,
             filePath: edge.target
           });
@@ -432,15 +510,43 @@ export class Scanner {
         const similarity = Math.round((intersection / union) * 100);
         
         if (similarity >= 45) {
+          const fragName1 = f1.name.startsWith('lines ') ? `block (${f1.name})` : `${f1.name}()`;
+          const fragName2 = f2.name.startsWith('lines ') ? `block (${f2.name})` : `${f2.name}()`;
+          const fragment = `Duplicate logic: ${fragName1} ≈ ${fragName2}`;
+
+          const fileSet1 = this.fileTokenSets.get(f1.filePath);
+          const fileSet2 = this.fileTokenSets.get(f2.filePath);
+          let fileSim = similarity;
+          if (fileSet1 && fileSet2) {
+            let fileInter = 0;
+            for (const t of fileSet1) {
+              if (fileSet2.has(t)) fileInter++;
+            }
+            const fileUnion = fileSet1.size + fileSet2.size - fileInter;
+            fileSim = Math.round((fileInter / fileUnion) * 100);
+          }
+
           const existing = this.graph.duplicates.find(d => 
             (d.fileA === f1.filePath && d.fileB === f2.filePath) ||
             (d.fileA === f2.filePath && d.fileB === f1.filePath)
           );
-          if (!existing || existing.similarity < similarity) {
+          if (!existing || (existing.funcSimilarity || existing.similarity) < similarity) {
             if (existing) {
-              existing.similarity = Math.max(existing.similarity, similarity);
+              existing.similarity = fileSim;
+              existing.funcSimilarity = similarity;
+              existing.fragment = fragment;
+              existing.lineA = f1.startLine;
+              existing.lineB = f2.startLine;
             } else {
-              this.graph.duplicates.push({ fileA: f1.filePath, fileB: f2.filePath, similarity });
+              this.graph.duplicates.push({
+                fileA: f1.filePath,
+                fileB: f2.filePath,
+                similarity: fileSim,
+                funcSimilarity: similarity,
+                fragment,
+                lineA: f1.startLine,
+                lineB: f2.startLine
+              });
             }
           }
         }
@@ -498,6 +604,18 @@ export class Scanner {
     });
 
     this.graph.cycles = cycles;
+
+    const unusedPackages: { name: string; file: string; type?: string }[] = [];
+    for (const [dep, info] of this.declaredDependencies.entries()) {
+      if (!this.usedDependencies.has(dep)) {
+        unusedPackages.push({
+          name: dep,
+          file: info.file,
+          type: info.type
+        });
+      }
+    }
+    this.graph.unusedPackages = unusedPackages;
 
     return this.graph;
   }

@@ -7,7 +7,7 @@ export interface ProductionRisk {
 
 export interface Node {
   id: string;
-  type: 'file' | 'module' | 'class' | 'function' | 'database_table';
+  type: 'file' | 'module' | 'class' | 'function' | 'database_table' | 'package' | 'external';
   name: string;
   filePath: string;
   problemCount?: number;
@@ -30,7 +30,17 @@ export interface Edge {
 export interface DuplicatePair {
   fileA: string;
   fileB: string;
-  similarity: number; // 0 to 100
+  similarity: number; // Overall file overlap % (0 to 100)
+  funcSimilarity?: number; // Function / Snippet similarity % (0 to 100)
+  fragment?: string; // Highlighted duplicate function or code snippet summary
+  lineA?: number; // Start line of duplicate logic in fileA
+  lineB?: number; // Start line of duplicate logic in fileB
+}
+
+export interface UnusedPackage {
+  name: string;
+  file: string;
+  type?: string;
 }
 
 export interface Graph {
@@ -38,6 +48,7 @@ export interface Graph {
   edges: Edge[];
   duplicates?: DuplicatePair[];
   cycles?: string[][]; // Array of circular dependency import paths
+  unusedPackages?: UnusedPackage[];
 }
 
 export interface HealthScore {

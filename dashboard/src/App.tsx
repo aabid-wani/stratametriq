@@ -9,6 +9,7 @@ function App() {
   const [edges, setEdges] = useState<any[]>([]);
   const [duplicates, setDuplicates] = useState<any[]>([]);
   const [cycles, setCycles] = useState<string[][]>([]);
+  const [unusedPackages, setUnusedPackages] = useState<any[]>([]);
   const [scanning, setScanning] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedApi, setSelectedApi] = useState<string | null>(null);
@@ -25,7 +26,6 @@ function App() {
     setSelectedApi(api);
   };
 
-
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
@@ -34,11 +34,13 @@ function App() {
         const rawEdges = message.data.edges || [];
         const rawDuplicates = message.data.duplicates || [];
         const rawCycles = message.data.cycles || [];
+        const rawUnused = message.data.unusedPackages || [];
 
         setNodes(rawNodes);
         setEdges(rawEdges);
         setDuplicates(rawDuplicates);
         setCycles(rawCycles);
+        setUnusedPackages(rawUnused);
         setScanning(false);
       }
     };
@@ -165,7 +167,7 @@ function App() {
     });
 
     return [...nodes]
-      .filter((n: any) => n.type === 'file')
+      .filter((n: any) => (n.type === 'file' || n.type === 'module') && n.type !== 'package' && !n.filePath?.includes('node_modules') && !['react', 'react-dom', 'react-router', 'react-router-dom', 'axios', 'express', 'lodash', 'vue', 'angular', 'next', 'vite', 'typescript'].includes(n.name?.toLowerCase()))
       .map((n: any) => ({ ...n, edgeCount: edgeCounts[n.id] || 0 }))
       .sort((a, b) => b.edgeCount - a.edgeCount)
       .slice(0, 5);
@@ -783,7 +785,7 @@ function App() {
         <div className="complex-files-list glass-card">
           <h3>Most Complex Modules</h3>
           {mostComplexFiles.length === 0 && !scanning ? (
-            <div className="empty-state">Run analysis to see fragile files.</div>
+            <div className="empty-state">Run analysis to view complex modules.</div>
           ) : scanning ? (
             <div className="loading-state">Analyzing...</div>
           ) : (
@@ -852,22 +854,47 @@ function App() {
           ) : (
             <ul className="fragile-list">
               {duplicates.map((dup: any, idx: number) => (
-                <li key={idx} style={{ flexDirection: 'column', alignItems: 'flex-start', borderLeftColor: '#8b5cf6' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div className="file-name clickable" onClick={() => handleOpenFile(dup.fileA)} title={dup.fileA} style={{ fontWeight: 700 }}>
-                        {getFileName(dup.fileA)} {renderOpenBadge(isFileOpen(dup.fileA))}
+                <li key={idx} style={{ flexDirection: 'column', alignItems: 'flex-start', borderLeftColor: '#8b5cf6', padding: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="file-name clickable" onClick={() => handleOpenItemWithLine(dup.fileA, undefined, dup.lineA || 1)} title={dup.fileA} style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                          {getFileName(dup.fileA)}
+                        </span>
+                        {dup.lineA && (
+                          <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(dup.fileA, undefined, dup.lineA); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer', padding: '1px 6px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }} title={`Click to jump directly to Line ${dup.lineA} in editor`}>
+                            [Line {dup.lineA}]
+                          </span>
+                        )}
+                        {renderOpenBadge(isFileOpen(dup.fileA))}
                       </div>
-                      <div className="file-name clickable" onClick={() => handleOpenFile(dup.fileB)} title={dup.fileB} style={{ fontWeight: 700 }}>
-                        {getFileName(dup.fileB)} {renderOpenBadge(isFileOpen(dup.fileB))}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="file-name clickable" onClick={() => handleOpenItemWithLine(dup.fileB, undefined, dup.lineB || 1)} title={dup.fileB} style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                          {getFileName(dup.fileB)}
+                        </span>
+                        {dup.lineB && (
+                          <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(dup.fileB, undefined, dup.lineB); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer', padding: '1px 6px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }} title={`Click to jump directly to Line ${dup.lineB} in editor`}>
+                            [Line {dup.lineB}]
+                          </span>
+                        )}
+                        {renderOpenBadge(isFileOpen(dup.fileB))}
                       </div>
                     </div>
-                    <div className="file-edges" style={{ background: 'rgba(139, 92, 246, 0.2)', color: '#c4b5fd' }}>
-                      {dup.similarity}% match
+                    <div className="file-edges" style={{ background: 'rgba(139, 92, 246, 0.2)', color: '#c4b5fd', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                      <span>{dup.funcSimilarity !== undefined ? `${dup.funcSimilarity}% Logic Match` : `${dup.similarity}% match`}</span>
+                      {dup.funcSimilarity !== undefined && dup.similarity !== undefined && dup.similarity !== dup.funcSimilarity && (
+                        <span style={{ fontSize: '0.68rem', color: '#a78bfa', fontWeight: 'normal' }}>({dup.similarity}% total file overlap)</span>
+                      )}
                     </div>
                   </div>
-                  <div className="problem-messages" style={{ fontSize: '0.8rem', color: '#34d399', marginTop: '4px' }}>
-                    ✔ Suggest creating a shared helper
+                  {dup.fragment && (
+                    <div style={{ fontSize: '0.78rem', color: '#f3e8ff', background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.35)', padding: '6px 10px', borderRadius: '4px', margin: '6px 0', fontFamily: 'monospace', width: '100%', boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ color: '#c4b5fd', fontWeight: 'bold' }}>⚡</span>
+                      <span>{dup.fragment}</span>
+                    </div>
+                  )}
+                  <div className="problem-messages" style={{ fontSize: '0.8rem', color: '#34d399', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    ✔ Suggest creating a shared helper for duplicate logic
                   </div>
                 </li>
               ))}
@@ -906,6 +933,38 @@ function App() {
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+
+        <div className="unused-deps-list glass-card" style={{ gridColumn: '1 / -1', width: '100%', marginTop: '0.5rem', boxSizing: 'border-box' }}>
+          <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span>Unused / Orphaned Dependencies</span>
+            <span style={{ fontSize: '0.7rem', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.15)', padding: '2px 8px', borderRadius: '12px' }}>Pre-Deployment Cleanup</span>
+          </h3>
+          <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.8rem' }}>Packages installed or declared in dependency manifests (package.json, requirements.txt, etc.) that are never imported or utilized in code:</p>
+          {unusedPackages.length === 0 && !scanning ? (
+            <div className="empty-state" style={{ color: '#34d399' }}>✔ Zero orphaned dependencies detected! All installed packages are actively utilized.</div>
+          ) : scanning ? (
+            <div className="loading-state">Scanning package manifests and imports...</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
+              {unusedPackages.map((pkg: any, idx: number) => (
+                <div key={idx} style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(244, 63, 94, 0.35)', borderLeft: '4px solid #f43f5e', borderRadius: '6px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'bold', color: '#fecdd3', fontSize: '0.9rem', fontFamily: 'monospace' }}>📦 {pkg.name}</span>
+                    <span style={{ fontSize: '0.7rem', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.1)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>{pkg.type || 'dep'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>Declared in:</span>
+                    <span className="file-name clickable" onClick={() => handleOpenFile(pkg.file)} style={{ color: '#38bdf8', textDecoration: 'underline', cursor: 'pointer' }}>{getFileName(pkg.file)}</span>
+                    {renderOpenBadge(isFileOpen(pkg.file))}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#fda4af', marginTop: '2px' }}>
+                    ✖ Not imported in any source module. Consider removing to reduce bundle & vulnerability footprint.
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
