@@ -156,8 +156,28 @@ function App() {
 
   const { score, complexity } = useMemo(() => {
     if (nodes.length === 0) return { score: 100, complexity: 0 };
-    const comp = edges.length / nodes.length;
-    let s = 100 - (comp * 2);
+    
+    const internalNodes = nodes.filter((n: any) => n.type === 'file' || n.type === 'module');
+    const totalModules = internalNodes.length > 0 ? internalNodes.length : nodes.length;
+    
+    const comp = edges.length / totalModules;
+    
+    let highRisks = 0;
+    let mediumRisks = 0;
+    nodes.forEach((n: any) => {
+      if (n.productionRisks) {
+        n.productionRisks.forEach((r: any) => {
+           if (r.severity === 'HIGH') highRisks++;
+           if (r.severity === 'MEDIUM') mediumRisks++;
+        });
+      }
+    });
+
+    const highRiskDensity = highRisks / totalModules;
+    const mediumRiskDensity = mediumRisks / totalModules;
+    
+    let s = 100 - (comp * 1.5) - (highRiskDensity * 40) - (mediumRiskDensity * 15);
+    
     if (s < 10) s = 10;
     if (s > 100) s = 100;
     return { score: Math.round(s), complexity: comp.toFixed(2) };

@@ -257,7 +257,17 @@ async function runScan(
   const totalEdges = graph.edges.length;
   const complexityIndex = totalModules > 0 ? (totalEdges / totalModules) : 0;
   
-  let healthScore = 100 - (complexityIndex * 2) - (highRisks * 5) - (mediumRisks * 2) - (circularCount * 10);
+  // Scale penalties based on project size (density) rather than flat absolute numbers
+  const highRiskDensity = totalModules > 0 ? (highRisks / totalModules) : 0;
+  const mediumRiskDensity = totalModules > 0 ? (mediumRisks / totalModules) : 0;
+  const circularDensity = totalModules > 0 ? (circularCount / totalModules) : 0;
+
+  let healthScore = 100 
+    - (complexityIndex * 1.5) 
+    - (highRiskDensity * 40) 
+    - (mediumRiskDensity * 15) 
+    - (circularDensity * 100);
+    
   healthScore = Math.max(10, Math.min(100, Math.round(healthScore)));
   
   let healthColor = colors.green;

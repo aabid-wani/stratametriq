@@ -81,6 +81,12 @@ export class Scanner {
     graphNode.productionRisks = [];
     const risks = graphNode.productionRisks;
 
+    const basename = path.basename(filePath).toLowerCase();
+    const isManifestOrLock = ext === '.json' || ext === '.lock' || ext === '.yaml' || ext === '.yml' || ext === '.md' || ext === '.txt' || basename === 'package-lock.json' || basename === 'yarn.lock' || basename === 'pnpm-lock.yaml';
+    if (isManifestOrLock) {
+      return;
+    }
+
     // Check for architectural code smells & production risks
     if (sourceText.includes('console.log')) {
       graphNode.problems.push('Warning: console.log statement found');
