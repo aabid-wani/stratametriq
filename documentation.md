@@ -208,8 +208,11 @@ This dual-branch pipeline ensures that structural flaws (like circular dependenc
 
 ---
 
-## 3. Quick Start: How to Launch & Scan
+## 3. Quick Start: How to Launch & Scan (2 Powerful Methods)
 
+StrataMetriq supports two distinct operating modes: an **Interactive VS Code Extension** for daily developer workflows, and a **Headless DevSecOps CLI** for automated CI/CD pipeline enforcement.
+
+### Method 1: Interactive VS Code Extension (VSIX)
 1. **Install the Extension:** 
    * Open Visual Studio Code and press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS).
    * Type and select **`Extensions: Install from VSIX...`**.
@@ -217,6 +220,62 @@ This dual-branch pipeline ensures that structural flaws (like circular dependenc
 2. **Reload Window:** Press `Ctrl+Shift+P` ➔ **`Developer: Reload Window`** to ensure all extension registries and AST parsing engines are cleanly initialized.
 3. **Open Dashboard:** Click the **StrataMetriq** icon in your VS Code Activity Bar, or launch the command palette (`Ctrl+Shift+P`) and execute: **`StrataMetriq: Open Dashboard`**.
 4. **Scan Your Workspace:** Click the glowing **Run Deep Analysis** button at the top right of the dashboard. StrataMetriq will instantly parse your codebase and generate your interactive architectural map!
+
+---
+
+### Method 2: Headless CLI & CI/CD Pipeline Gates (`@stratametriq/cli`)
+Run StrataMetriq directly in your terminal or automated DevOps workflow (GitHub Actions, GitLab CI, Jenkins) to automatically evaluate architecture health and block pull requests containing critical vulnerabilities!
+
+#### ⚡ Step-by-Step CLI Instructions:
+
+##### 1. Local Terminal Execution
+Run the CLI directly in any directory without installing globally:
+```bash
+# Run basic architecture scan and output colored terminal summary
+npx stratametriq scan .
+
+# Scan a specific sub-folder and enforce zero HIGH severity vulnerabilities
+npx stratametriq scan ./src --fail-on-high
+```
+
+##### 2. Exporting Reports for CI/CD Automation
+Generate structured JSON for SBOM/SonarQube integration, or markdown tables for PR bot comments:
+```bash
+npx stratametriq scan . --fail-on-high --json report.json --md pr-comment.md
+```
+
+##### 3. Available Quality Gates & CLI Flags
+| CLI Flag | Purpose | CI/CD Pipeline Exit Behavior |
+| :--- | :--- | :--- |
+| `scan [dir]` | Target directory (defaults to current directory). | Outputs colored console dashboard of metrics & risks. |
+| `--fail-on-high` | Security vulnerability gate. | Exits with **Exit Code `1`** (fails pipeline) if any HIGH severity risk (SQLi, XSS, Crypto, Secrets) is detected. |
+| `--fail-on-circular` | Architectural loop gate. | Exits with **Exit Code `1`** if any circular dependency loops are detected. |
+| `--max-circular <N>` | Custom threshold gate. | Fails build only if circular dependencies exceed `<N>`. |
+| `--json <file>` | JSON export. | Generates structured JSON report for downstream automation. |
+| `--md <file>` | Markdown export. | Generates GitHub-flavored markdown report table. |
+
+##### 4. Example GitHub Actions Workflow (`.github/workflows/stratametriq.yml`)
+```yaml
+name: StrataMetriq Architecture & Security Audit
+on: [push, pull_request]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run StrataMetriq CLI Gate
+        run: npx stratametriq scan . --fail-on-high --md pr-report.md
+      - name: Comment on PR (if pull request)
+        if: github.event_name == 'pull_request' && always()
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: pr-report.md
+```
 
 ---
 

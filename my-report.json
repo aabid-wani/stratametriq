@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "id": "d:/codevision/scanner/src/index.ts",
+      "type": "module",
+      "name": "index.ts",
+      "filePath": "D:\\codeVision\\scanner\\src\\index.ts",
+      "exportsCount": 1,
+      "functionsCount": 0,
+      "componentsUsed": [],
+      "apisCalled": [],
+      "dbTables": [],
+      "problems": [],
+      "problemCount": 0,
+      "productionRisks": []
+    },
+    {
+      "id": "d:/codevision/scanner/src/parser.ts",
+      "type": "module",
+      "name": "parser.ts",
+      "filePath": "D:\\codeVision\\scanner\\src\\parser.ts",
+      "exportsCount": 1,
+      "functionsCount": 37,
+      "componentsUsed": [],
+      "apisCalled": [],
+      "dbTables": [
+        "_table",
+        "s_table",
+        "tbl_"
+      ],
+      "problems": [
+        "Warning: console.log statement found",
+        "Note: Unresolved TODO/FIXME comment"
+      ],
+      "problemCount": 2,
+      "productionRisks": [
+        {
+          "category": "Debug code",
+          "message": "Found active debug statement (console, debugger, alert)",
+          "severity": "HIGH",
+          "line": 85
+        },
+        {
+          "category": "Large commented code blocks",
+          "message": "Found block comment containing commented-out source code",
+          "severity": "MEDIUM",
+          "line": 379
+        },
+        {
+          "category": "Dead code",
+          "message": "Dead code detected: unused/deprecated block or false conditional",
+          "severity": "MEDIUM",
+          "line": 482
+        },
+        {
+          "category": "Test data",
+          "message": "Test suite, mock data, or test fixture detected",
+          "severity": "HIGH",
+          "line": 49
+        },
+        {
+          "category": "XSS DOM Risks",
+          "message": "Unsanitized DOM execution detected (dangerouslySetInnerHTML / eval / document.write)",
+          "severity": "HIGH",
+          "line": 241
+        },
+        {
+          "category": "Empty catch blocks",
+          "message": "Swallowed exception: empty catch block found",
+          "severity": "MEDIUM",
+          "line": 63
+        }
+      ]
+    },
+    {
+      "id": "./parser",
+      "type": "package",
+      "name": "parser",
+      "filePath": "./parser"
+    },
+    {
+      "id": "typescript",
+      "type": "package",
+      "name": "typescript",
+      "filePath": "typescript"
+    },
+    {
+      "id": "path",
+      "type": "package",
+      "name": "path",
+      "filePath": "path"
+    },
+    {
+      "id": "@stratametriq/shared",
+      "type": "package",
+      "name": "shared",
+      "filePath": "@stratametriq/shared"
+    }
+  ],
+  "edges": [
+    {
+      "source": "d:/codevision/scanner/src/index.ts",
+      "target": "./parser",
+      "type": "imports"
+    },
+    {
+      "source": "d:/codevision/scanner/src/parser.ts",
+      "target": "typescript",
+      "type": "imports"
+    },
+    {
+      "source": "d:/codevision/scanner/src/parser.ts",
+      "target": "path",
+      "type": "imports"
+    },
+    {
+      "source": "d:/codevision/scanner/src/parser.ts",
+      "target": "@stratametriq/shared",
+      "type": "imports"
+    }
+  ],
+  "duplicates": [],
+  "cycles": [],
+  "unusedPackages": []
+}

@@ -13,7 +13,8 @@
     "runtime",
     "ai",
     "dashboard",
-    "shared"
+    "shared",
+    "cli"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",

@@ -1,0 +1,21 @@
+{
+  "name": "@stratametriq/cli",
+  "version": "1.3.0",
+  "description": "Headless CLI and CI/CD DevSecOps Governance Gate for StrataMetriq",
+  "bin": {
+    "stratametriq": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@stratametriq/shared": "*",
+    "@stratametriq/scanner": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.3"
+  }
+}

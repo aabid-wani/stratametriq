@@ -87,13 +87,17 @@ In a typical engineering organization, developers must piece together **3 to 4 s
 StrataMetriq is structured as a high-performance TypeScript monorepo:
 * **`extension/` (Backend Host)**: A Node.js-based VS Code extension. It commands the workspace, reads the filesystem, queries the Language Server for syntax diagnostics, registers commands, and orchestrates the webview panel.
 * **`dashboard/` (Frontend UI)**: A React application bundled with Vite. It features a premium glassmorphic UI, custom scrollbars, and renders interactive dependency graphs and vertical API lifecycle traces.
-* **`scanner/` (Analysis Engine)**: A deep AST (Abstract Syntax Tree) parser powered by TypeScript and Acorn. It analyzes source files, tokenizes logic for duplicate detection, extracts API routes and SQL query tables, and evaluates 9 categories of production risks.
-* **`shared/`**: Common TypeScript interfaces ensuring seamless type safety between the scanner, extension host, and webview UI.
+* **`scanner/` (Analysis Engine)**: A deep AST (Abstract Syntax Tree) parser powered by TypeScript and Acorn. It analyzes source files, tokenizes logic for duplicate detection, extracts API routes and SQL query tables, and evaluates 7 categories of production risks.
+* **`cli/` (DevSecOps Governance)**: A standalone headless command-line executable (`@stratametriq/cli`) that runs AST scans in terminal windows and CI/CD pipelines, enforces automated pipeline gates (`--fail-on-high`), and exports JSON/Markdown PR reports.
+* **`shared/`**: Common TypeScript interfaces ensuring seamless type safety between the scanner, extension host, CLI, and webview UI.
 
 ---
 
-## 🚀 How to Install & Use
+## 🚀 How to Install & Use (2 Powerful Methods)
 
+StrataMetriq provides both an **Interactive Developer UI** inside VS Code and a **Headless CI/CD Pipeline Gate** for automated DevOps workflows.
+
+### Method 1: Interactive VS Code Extension (VSIX)
 1. **Install from VSIX**:
    * Open VS Code and press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS).
    * Type and select **`Extensions: Install from VSIX...`**.
@@ -108,6 +112,33 @@ StrataMetriq is structured as a high-performance TypeScript monorepo:
    * Check your **Pre-Deployment Audit** checklist before pushing code.
    * Click any API endpoint in the **API Flow Visualizer** to see how data moves vertically through your stack.
    * Click any file node to instantly open it in your editor!
+
+---
+
+### Method 2: Headless CLI & CI/CD Pipeline Gates (DevSecOps)
+Run StrataMetriq directly in your terminal, Docker container, or CI/CD workflow (GitHub Actions, GitLab CI, Jenkins) to automatically block pull requests containing security vulnerabilities or circular loops!
+
+#### ⚡ Quick Terminal Command:
+```bash
+# Scan the current directory locally
+npx stratametriq scan .
+
+# Scan and fail the build if any HIGH severity risks exist
+npx stratametriq scan ./src --fail-on-high
+
+# Export architecture report to JSON and Markdown (ideal for automated PR bot comments)
+npx stratametriq scan . --fail-on-high --json report.json --md pr-comment.md
+```
+
+#### 🚦 Available CLI Flags & Quality Gates:
+| Flag | Description | CI/CD Behavior |
+| :--- | :--- | :--- |
+| `scan [dir]` | Target directory to scan (defaults to current working directory). | Outputs colored ANSI tables of stats & risks. |
+| `--fail-on-high` | Enforces DevSecOps quality gate. | Exits with **Exit Code `1`** (fails pipeline) if any HIGH severity risk (SQLi, XSS, Crypto, Secrets) is detected. |
+| `--fail-on-circular` | Enforces architectural health gate. | Exits with **Exit Code `1`** if any circular dependency loops are detected. |
+| `--max-circular <N>` | Sets a custom threshold for circular loops. | Fails build only if circular loops exceed `<N>`. |
+| `--json <file>` | Exports full AST graph and audit data to JSON. | Perfect for SBOM generation or SonarQube integration. |
+| `--md <file>` | Exports GitHub-flavored Markdown report. | Can be fed directly into `gh pr comment` in GitHub Actions. |
 
 ---
 
