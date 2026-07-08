@@ -14,14 +14,26 @@ StrataMetriq includes **`@stratametriq/cli`**, a standalone headless executable 
 You can run the CLI immediately in any project directory without installing anything globally:
 
 ```bash
+# Interactive setup: create a default .stratametriqrc.json configuration file
+npx @stratametriq/cli init
+
 # Scan the current directory locally
-npx stratametriq scan .
+npx @stratametriq/cli scan .
 
-# Scan a specific directory and fail the build if HIGH severity vulnerabilities exist
-npx stratametriq scan ./src --fail-on-high
+# Run downstream BFS impact analysis on a specific file ("what breaks if I edit this?")
+npx @stratametriq/cli impact src/services/UserService.ts
 
-# Export architecture graph to JSON and generate Markdown summary for PR bot comments
-npx stratametriq scan . --fail-on-high --json report.json --md pr-comment.md
+# Git PR Mode: Scan only modified files in your branch/PR against origin/main
+npx @stratametriq/cli scan . --diff origin/main --fail-on-high
+
+# Dead code & dependency pruning: Report unused npm packages and orphaned modules
+npx @stratametriq/cli scan . --prune
+
+# Standalone interactive offline HTML dashboard report
+npx @stratametriq/cli scan . --html architecture-report.html
+
+# Live watch mode for local development (automatically re-scans on file save)
+npx @stratametriq/cli scan . --watch
 ```
 
 ---
@@ -32,7 +44,13 @@ In automated CI/CD pipelines, process exit codes control whether a Pull Request 
 
 | CLI Flag | Description | CI/CD Pipeline Exit Behavior |
 | :--- | :--- | :--- |
+| `init` | Creates default `.stratametriqrc.json` configuration file. | Configures ignore rules, custom risk thresholds, and default report paths. |
 | `scan [dir]` | Target directory to scan (defaults to current working directory). | Outputs colored ANSI tables of stats & risks. |
+| `impact <file>` | Runs downstream BFS ripple analysis on a specific target file. | Categorizes downstream affected files, API routes, database tables, and UI widgets. |
+| `--diff <ref>` | Git PR mode: Compares against Git branch or commit reference. | Evaluates security risks and circular loops strictly within modified files. |
+| `--prune` | Dead code and dependency cleanup report. | Identifies unreferenced `package.json` dependencies and orphaned module code. |
+| `--watch`, `-w` | Live reloading development mode. | Automatically monitors file changes and re-runs AST scans in `<200ms`. |
+| `--html <file>` | Exports standalone interactive HTML report. | Creates an offline web view with health score badges, risk tables, and statistics cards. |
 | `--fail-on-high` | Security vulnerability gate. | Exits with **Exit Code `1`** (fails pipeline) if any HIGH severity risk (SQLi, XSS, Crypto, Secrets) is detected. |
 | `--fail-on-circular` | Architectural loop gate. | Exits with **Exit Code `1`** if any circular dependency loops are detected. |
 | `--max-circular <N>` | Sets a custom threshold for circular loops. | Fails build only if circular loops exceed `<N>`. |
@@ -63,7 +81,7 @@ jobs:
           node-version: 20
 
       - name: Run StrataMetriq DevSecOps Gate
-        run: npx stratametriq scan . --fail-on-high --md pr-report.md
+        run: npx @stratametriq/cli scan . --fail-on-high --md pr-report.md
 
       - name: Comment Audit Summary on PR
         if: github.event_name == 'pull_request' && always()
@@ -81,7 +99,7 @@ stratametriq_gate:
   stage: architecture-audit
   image: node:20-alpine
   script:
-    - npx stratametriq scan . --fail-on-high --json stratametriq-report.json
+    - npx @stratametriq/cli scan . --fail-on-high --json stratametriq-report.json
   artifacts:
     when: always
     paths:

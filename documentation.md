@@ -232,16 +232,19 @@ Run StrataMetriq directly in your terminal or automated DevOps workflow (GitHub 
 Run the CLI directly in any directory without installing globally:
 ```bash
 # Run basic architecture scan and output colored terminal summary
-npx stratametriq scan .
+npx @stratametriq/cli scan .
+
+# Run downstream BFS impact analysis on a specific file ("what breaks if I edit this?")
+npx @stratametriq/cli impact src/services/UserService.ts
 
 # Scan a specific sub-folder and enforce zero HIGH severity vulnerabilities
-npx stratametriq scan ./src --fail-on-high
+npx @stratametriq/cli scan ./src --fail-on-high
 ```
 
 ##### 2. Exporting Reports for CI/CD Automation
 Generate structured JSON for SBOM/SonarQube integration, or markdown tables for PR bot comments:
 ```bash
-npx stratametriq scan . --fail-on-high --json report.json --md pr-comment.md
+npx @stratametriq/cli scan . --fail-on-high --json report.json --md pr-comment.md
 ```
 
 ##### 3. Available Quality Gates & CLI Flags
@@ -269,7 +272,7 @@ jobs:
         with:
           node-version: 20
       - name: Run StrataMetriq CLI Gate
-        run: npx stratametriq scan . --fail-on-high --md pr-report.md
+        run: npx @stratametriq/cli scan . --fail-on-high --md pr-report.md
       - name: Comment on PR (if pull request)
         if: github.event_name == 'pull_request' && always()
         uses: thollander/actions-comment-pull-request@v2

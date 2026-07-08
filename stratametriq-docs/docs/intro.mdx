@@ -59,13 +59,16 @@ Engineered with highly optimized tokenizers and TypeScript AST evaluators that p
 Run directly in any directory without global installation:
 ```bash
 # Local terminal scan
-npx stratametriq scan .
+npx @stratametriq/cli scan .
+
+# Run downstream BFS impact analysis on a specific file ("what breaks if I edit this?")
+npx @stratametriq/cli impact src/services/UserService.ts
 
 # CI/CD Pipeline Gate: Block build if HIGH severity vulnerabilities exist
-npx stratametriq scan ./src --fail-on-high
+npx @stratametriq/cli scan ./src --fail-on-high
 
 # Export JSON & Markdown PR report
-npx stratametriq scan . --fail-on-high --json report.json --md pr-comment.md
+npx @stratametriq/cli scan . --fail-on-high --json report.json --md pr-comment.md
 ```
 👉 Check out our dedicated [**Headless CLI & CI/CD Guide**](./cli-guide.md) for GitHub Actions and GitLab CI workflows!
 
