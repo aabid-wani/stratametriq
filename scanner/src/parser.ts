@@ -6,7 +6,7 @@ import { loadGovernanceRules, evaluateArchitectureGovernance } from './governanc
 export class Scanner {
   private graph: Graph = { nodes: [], edges: [], duplicates: [] };
   private nodeIds = new Set<string>();
-  private globalFunctions: { filePath: string; name: string; startLine: number; tokens: Set<string> }[] = [];
+  private globalFunctions: { filePath: string; name: string; startLine: number; tokens: Set<string>; snippet: string }[] = [];
   private fileTokenSets = new Map<string, Set<string>>();
   private declaredDependencies = new Map<string, { file: string; type: string }>();
   private usedDependencies = new Set<string>();
@@ -275,11 +275,13 @@ export class Scanner {
           const blockLines = lines.slice(lIdx, Math.min(lines.length, lIdx + 40)).join(' ');
           const tokens = blockLines.match(/[a-zA-Z0-9_]{3,}/g);
           if (tokens && tokens.length >= 15) {
+            const snippet = lines.slice(lIdx, Math.min(lines.length, lIdx + 6)).join('\n');
             this.globalFunctions.push({
               filePath: filePath,
               name: funcName,
               startLine: lIdx + 1,
-              tokens: new Set(tokens.slice(0, 300))
+              tokens: new Set(tokens.slice(0, 300)),
+              snippet
             });
           }
         }
@@ -289,11 +291,13 @@ export class Scanner {
           const blockLines = lines.slice(lIdx, Math.min(lines.length, lIdx + 30)).join(' ');
           const tokens = blockLines.match(/[a-zA-Z0-9_]{3,}/g);
           if (tokens && tokens.length >= 15) {
+            const snippet = lines.slice(lIdx, Math.min(lines.length, lIdx + 6)).join('\n');
             this.globalFunctions.push({
               filePath: filePath,
               name: `lines ${lIdx + 1}-${Math.min(lines.length, lIdx + 30)}`,
               startLine: lIdx + 1,
-              tokens: new Set(tokens.slice(0, 300))
+              tokens: new Set(tokens.slice(0, 300)),
+              snippet
             });
           }
         }
@@ -620,6 +624,8 @@ export class Scanner {
               existing.fragment = fragment;
               existing.lineA = f1.startLine;
               existing.lineB = f2.startLine;
+              existing.codeSnippetA = f1.snippet;
+              existing.codeSnippetB = f2.snippet;
             } else {
               this.graph.duplicates.push({
                 fileA: f1.filePath,
@@ -628,7 +634,9 @@ export class Scanner {
                 funcSimilarity: similarity,
                 fragment,
                 lineA: f1.startLine,
-                lineB: f2.startLine
+                lineB: f2.startLine,
+                codeSnippetA: f1.snippet,
+                codeSnippetB: f2.snippet
               });
             }
           }

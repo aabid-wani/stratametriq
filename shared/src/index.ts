@@ -36,6 +36,8 @@ export interface DuplicatePair {
   fragment?: string; // Highlighted duplicate function or code snippet summary
   lineA?: number; // Start line of duplicate logic in fileA
   lineB?: number; // Start line of duplicate logic in fileB
+  codeSnippetA?: string; // Exact lines of highlighted duplicate code in fileA
+  codeSnippetB?: string; // Exact lines of highlighted duplicate code in fileB
 }
 
 export interface UnusedPackage {
