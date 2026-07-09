@@ -53,20 +53,24 @@ When you click any file in the dashboard, StrataMetriq calculates its downstream
 ### 4. 🌳 Interactive Dependency Explorer & Multi-Layer Tree
 Provides an interactive, hierarchical tree graph (`Root Module ➔ Controller ➔ Service ➔ Database Table`).
 * **Real-Time Editor Sync**: Automatically monitors your open editor tabs in VS Code and displays live **`[Open]`** or **`[Closed]`** badges next to each module in the graph!
-* Click any node in the tree to instantly open that file in VS Code at the exact line of interest.
+* **Global Search & Quick-Filter Toolbar**: Instantly search across module names, API routes, or database tables, or toggle 1-click filter pills (`All Modules`, `⚠️ High Risks`, `📂 Open Tabs`, `🔄 Circular Loops`).
+* **Interactive Line Jumping**: Click glowing **`↗ Line X`** action buttons on any risk finding or duplicate logic pair to jump straight to that exact line in VS Code.
 
 ### 5. 👥 Duplicate Code & 🔄 Circular Dependency Detection
 Automatically scans token overlap across your workspace to identify copy-pasted business logic between different files, and executes a high-speed DFS cycle detection algorithm to catch import loops.
 * **Duplicate Logic**: Displays duplicate pairs with similarity percentages (e.g., `92% Similarity`) and actionable DRY refactoring guidance.
 * **Circular Dependencies**: Flags tight coupling loops (e.g., `Module A ➔ Module B ➔ Module A`) with dedicated alert cards and one-click editor jumping to help you decouple architecture cleanly.
 
-### 6. 📊 Architectural Health Scoring & Complexity Gauge
-Quantifies your project's technical debt into two clear metrics:
+### 6. 📊 Architectural Health Scoring, Status Bar & Live Inline Diagnostics
+Quantifies your project's technical debt into clear, actionable visibility:
 * **Project Health Score (0% – 100%)**: A high-level gauge of overall codebase maintainability, safety, and separation of concerns.
-* **Complexity Index**: Measures the average dependency density per module to highlight tight coupling and spaghetti code before it gets out of hand.
+* **Complexity Index**: Measures the average dependency density per module to highlight tight coupling and spaghetti code.
+* **Persistent VS Code Status Bar Badge**: Displays live project health and high-severity risk counts directly in your bottom-right status bar (`🛡️ StrataMetriq: Ready` / `🚨 StrataMetriq: 2 High Risks`).
+* **Live Inline Editor Diagnostics**: Attaches warning and error squiggles directly to active debug statements, hardcoded secrets, and empty catch blocks while you type or save files.
 
-### 7. 🎨 Premium Glassmorphic UI & Ergonomic Scrollbars
-Designed with a state-of-the-art dark mode aesthetic featuring neon cyan/amber accents, smooth micro-animations, and custom-styled scrollbars. Every data section is cleanly bounded with fixed heights for effortless navigation of massive projects.
+### 7. 🎨 Executive JSON Audit Export & Actionable Remediation Guides
+* **One-Click Executive Audit Export (`📥 Export Audit JSON`)**: Download a complete JSON audit report of project health, duplicate pairs, circular loops, and high-severity findings directly from the webview header.
+* **Actionable `💡 Fix` Remediation Guides**: Both the headless CLI (`stratametriq scan .`) and automated Markdown PR comments output clear 1-line remediation instructions below every high-severity finding.
 
 ---
 

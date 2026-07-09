@@ -60,6 +60,22 @@ In automated CI/CD pipelines, process exit codes control whether a Pull Request 
 
 ---
 
+## 💡 Actionable Remediation Guides in Terminal & PR Comments
+
+Whenever `@stratametriq/cli` detects a **HIGH severity finding**, it prints both the location and an immediate, context-aware **Remediation Guide (`💡 Fix`)** directly below the finding line:
+
+```text
+[!] High Severity Risks Detected:
+  - [Debug code] in D:\codeVision\scanner\src\parser.ts:91 -> Found active debug statement (console, debugger, alert)
+    💡 Fix: Remove active debugger/console statements before deployment or wrap in a structured logger.
+  - [SQL / NoSQL Injection] in D:\codeVision\scanner\src\db.ts:44 -> Raw query concatenation detected
+    💡 Fix: Use parameterized database queries ($1, ?) or ORM query builders instead of raw string concatenation.
+```
+
+When generating Markdown PR reports (`--md pr-report.md`), these remediation instructions are automatically formatted as GitHub blockquotes beneath each finding.
+
+---
+
 ## 🤖 Integrating with CI/CD Pipelines
 
 ### 1. GitHub Actions Workflow (`.github/workflows/stratametriq.yml`)
