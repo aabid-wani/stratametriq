@@ -34,6 +34,28 @@ Engineered with highly optimized tokenizers and TypeScript AST evaluators that p
 
 ---
 
+## 🏛️ Enterprise Custom Architecture Governance
+
+StrataMetriq allows Principal Architects and DevOps leaders to enforce organizational architecture standards across layered codebases and monorepos using a root **`stratametriq.config.yml`** configuration file.
+
+```yaml
+version: 1
+rules:
+  - name: "UI layer cannot import Database layer directly"
+    source: "src/ui/**"
+    forbiddenTarget: "src/db/**"
+    severity: "HIGH"
+    message: "UI components must go through src/services/ or API endpoints."
+```
+
+* **Instant IDE Prevention**: Forbidden imports are flagged in real time with inline diagnostic squiggles and status bar warnings inside VS Code.
+* **Automated CI/CD Gates**: Running `npx @stratametriq/cli scan . --fail-on-high` blocks pull requests if architectural boundaries are violated.
+* **Actionable Remediation**: Outputs immediate 1-line `💡 Fix` instructions beneath every finding.
+
+👉 Learn more in the dedicated [**Custom Architecture Governance Guide**](./governance.md).
+
+---
+
 ## 🚀 Key Highlights
 
 | Feature | Description | Benefit |
