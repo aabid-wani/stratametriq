@@ -50,7 +50,7 @@ const IGNORED_DIRS = new Set([
 ]);
 
 const ALLOWED_EXTS = new Set([
-  '.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.go', '.cs', 
+  '.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.kt', '.go', '.cs', 
   '.rb', '.php', '.rs', '.cpp', '.c', '.h', '.json', '.txt'
 ]);
 

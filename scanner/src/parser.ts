@@ -32,7 +32,7 @@ export class Scanner {
     if (!graphNode) {
       graphNode = {
         id: normalizedPath,
-        type: isJsOrTs || isJsx || ['.py', '.java', '.go', '.cs', '.php', '.rb', '.rs', '.cpp', '.h'].includes(ext) ? 'module' : 'file',
+        type: isJsOrTs || isJsx || ['.py', '.java', '.kt', '.go', '.cs', '.php', '.rb', '.rs', '.cpp', '.h'].includes(ext) ? 'module' : 'file',
         name: path.basename(filePath),
         filePath: filePath // keep original casing for UI and opening
       };
@@ -715,7 +715,7 @@ export class Scanner {
   private parsePolyglotAST(filePath: string, ext: string, sourceText: string, currentFilePath: string, graphNode: Node) {
     const lines = sourceText.split(/\r\n|\r|\n/);
 
-    // 1. Python (.py)
+    // 1. Python (.py) - FastAPI, Django, Flask, SQLAlchemy
     if (ext === '.py') {
       for (const line of lines) {
         // Imports: import foo.bar as fb | from foo.bar import baz
@@ -725,22 +725,26 @@ export class Scanner {
           this.graph.edges.push({ source: currentFilePath.toLowerCase(), target: mod, type: 'imports' });
         }
         // Functions / Classes
-        if (/^\s*(?:async\s+)?def\s+([a-zA-Z0-9_]+)\s*\(/.test(line) || /^\s*class\s+([a-zA-Z0-9_]+)/.test(line)) {
+        if (/^\s*(?:async\s+)?def\s+([a-zA-Z0-9_]+)\s*\(/.test(line)) {
           graphNode.functionsCount!++;
           graphNode.exportsCount!++;
         }
-        // API Routes: @app.get("/api/...") | @router.post(...) | @app.route("/api/...", methods=['POST'])
-        const apiMatch = line.match(/@(?:app|router|api)\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/i);
+        if (/^\s*class\s+([a-zA-Z0-9_]+)/.test(line)) {
+          graphNode.classesCount = (graphNode.classesCount || 0) + 1;
+          graphNode.exportsCount!++;
+        }
+        // API Routes: @app.get("/api/...") | @router.post(...) | @app.route("/api/...", methods=['POST']) | path("api/...", ...)
+        const apiMatch = line.match(/@(?:app|router|api|blueprint)\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/i);
         if (apiMatch) {
           const endpoint = `${apiMatch[1].toUpperCase()} ${apiMatch[2]}`;
           if (!graphNode.apisCalled!.includes(endpoint)) graphNode.apisCalled!.push(endpoint);
         }
-        const routeMatch = line.match(/@(?:app|blueprint)\.route\s*\(\s*['"`]([^'"`]+)['"`].*?methods\s*=\s*\[\s*['"`]([A-Z]+)['"`]/i);
-        if (routeMatch && routeMatch[1] && routeMatch[2]) {
-          const endpoint = `${routeMatch[2].toUpperCase()} ${routeMatch[1]}`;
+        const djangoMatch = line.match(/(?:path|re_path|url)\s*\(\s*['"`]([^'"`]+)['"`]/i);
+        if (djangoMatch && djangoMatch[1] && djangoMatch[1].includes('/')) {
+          const endpoint = `ANY /${djangoMatch[1].replace(/^\//, '')}`;
           if (!graphNode.apisCalled!.includes(endpoint)) graphNode.apisCalled!.push(endpoint);
         }
-        // DB Tables: __tablename__ = 'users_table' | class User(db.Model):
+        // DB Tables: __tablename__ = 'users_table' | class User(models.Model):
         const tblMatch = line.match(/__tablename__\s*=\s*['"`]([^'"`]+)['"`]/i) || line.match(/Table\s*\(\s*['"`]([^'"`]+)['"`]/i);
         if (tblMatch && tblMatch[1]) {
           const tbl = tblMatch[1].toLowerCase();
@@ -748,17 +752,22 @@ export class Scanner {
         }
       }
     }
-    // 2. Java (.java) & C# (.cs)
-    else if (ext === '.java' || ext === '.cs') {
+    // 2. Java (.java), Kotlin (.kt), C# (.cs) - Spring Boot, JAX-RS, ASP.NET Core
+    else if (ext === '.java' || ext === '.kt' || ext === '.cs') {
       for (const line of lines) {
         // Imports: import com.example.foo; | using System.Text;
-        const impMatch = line.match(/^\s*(?:import|using)\s+([a-zA-Z0-9_\.]+)\s*;/);
+        const impMatch = line.match(/^\s*(?:import|using)\s+([a-zA-Z0-9_\.]+)\s*(?:;|$)/);
         if (impMatch && impMatch[1]) {
           const mod = impMatch[1].replace(/\./g, '/').toLowerCase();
           this.graph.edges.push({ source: currentFilePath.toLowerCase(), target: mod, type: 'imports' });
         }
-        // Functions / Methods / Classes
-        if (/^\s*(?:public|private|protected|internal)\s+(?:static\s+|async\s+|virtual\s+|override\s+|final\s+)*(?:class|interface|record|[a-zA-Z0-9_<>\/]+)\s+([a-zA-Z0-9_]+)\s*(?:\(|\{|extends|implements|:)/.test(line)) {
+        // Classes / Records / Interfaces
+        if (/^\s*(?:public|private|protected|internal)?\s*(?:abstract|final|open|data|sealed)?\s*(?:class|interface|record)\s+([a-zA-Z0-9_]+)/.test(line)) {
+          graphNode.classesCount = (graphNode.classesCount || 0) + 1;
+          graphNode.exportsCount!++;
+        }
+        // Functions / Methods
+        if (/^\s*(?:public|private|protected|internal|fun)\s+(?:static\s+|async\s+|virtual\s+|override\s+|final\s+)*(?:[a-zA-Z0-9_<>\/]+\s+)+([a-zA-Z0-9_]+)\s*\(/.test(line)) {
           graphNode.functionsCount!++;
           if (/public|internal/.test(line)) graphNode.exportsCount!++;
         }
@@ -781,7 +790,7 @@ export class Scanner {
         }
       }
     }
-    // 3. Go (.go)
+    // 3. Go (.go) - Gin, Echo, Fiber, GORM
     else if (ext === '.go') {
       for (const line of lines) {
         // Imports: import "example.com/pkg/foo"
@@ -789,6 +798,11 @@ export class Scanner {
         if (impMatch && impMatch[1] && !line.includes('package ')) {
           const mod = impMatch[1].toLowerCase();
           this.graph.edges.push({ source: currentFilePath.toLowerCase(), target: mod, type: 'imports' });
+        }
+        // Structs / Interfaces
+        if (/^\s*type\s+([a-zA-Z0-9_]+)\s+(?:struct|interface)/.test(line)) {
+          graphNode.classesCount = (graphNode.classesCount || 0) + 1;
+          graphNode.exportsCount!++;
         }
         // Functions: func MyFunc(...) | func (s *Service) Handler(...)
         if (/^\s*func\s+(?:\([^\)]+\)\s*)?([a-zA-Z0-9_]+)\s*\(/.test(line)) {

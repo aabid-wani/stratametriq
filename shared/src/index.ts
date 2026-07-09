@@ -15,6 +15,7 @@ export interface Node {
   productionRisks?: ProductionRisk[];
   exportsCount?: number;
   functionsCount?: number;
+  classesCount?: number;
   componentsUsed?: string[];
   apisCalled?: string[];
   dbTables?: string[];

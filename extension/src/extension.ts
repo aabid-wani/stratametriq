@@ -84,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
             // Trigger actual scan
             const scanner = new Scanner();
             const excludePattern = '{**/.*/**,**/node_modules/**,**/dist/**,**/build/**,**/out/**,**/vendor/**,**/coverage/**,**/dashboard-dist/**,**/scratch/**,**/*.min.js,**/*.bundle.js,**/*.map}';
-            vscode.workspace.findFiles('**/*.{js,ts,jsx,tsx,py,java,go,cs,rb,php,rs,cpp,c,h,json,txt}', excludePattern, 5000).then(async (files) => {
+            vscode.workspace.findFiles('**/*.{js,ts,jsx,tsx,py,java,kt,go,cs,rb,php,rs,cpp,c,h,json,txt}', excludePattern, 5000).then(async (files) => {
               let processedCount = 0;
               for (const file of files) {
                 try {
