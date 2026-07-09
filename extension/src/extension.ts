@@ -43,14 +43,84 @@ export function activate(context: vscode.ExtensionContext) {
     }
   };
 
+  let latestDuplicates: any[] = [];
+  const duplicateDecorationType = vscode.window.createTextEditorDecorationType({
+    isWholeLine: true,
+    backgroundColor: 'rgba(168, 85, 247, 0.12)',
+    borderWidth: '0 0 0 4px',
+    borderStyle: 'solid',
+    borderColor: '#a855f7',
+    overviewRulerColor: '#a855f7',
+    overviewRulerLane: vscode.OverviewRulerLane.Left
+  });
+  context.subscriptions.push(duplicateDecorationType);
+
+  const applyDuplicateDecorations = (editor: vscode.TextEditor | undefined) => {
+    if (!editor || !latestDuplicates.length) return;
+    const docPath = path.normalize(editor.document.uri.fsPath).toLowerCase();
+    const decorations: vscode.DecorationOptions[] = [];
+
+    for (const dup of latestDuplicates) {
+      const fileAPath = path.normalize(dup.fileA).toLowerCase();
+      const fileBPath = path.normalize(dup.fileB).toLowerCase();
+
+      if (fileAPath === docPath && dup.lineA) {
+        const startLine = Math.max(0, dup.lineA - 1);
+        const endLine = Math.min(editor.document.lineCount - 1, startLine + 5);
+        const range = new vscode.Range(startLine, 0, endLine, 100);
+        const otherName = path.basename(dup.fileB);
+        decorations.push({
+          range,
+          hoverMessage: new vscode.MarkdownString(
+            `**⚡ StrataMetriq Duplicate Logic Block**\n\nIdentical logic structure matched in **[${otherName} (Line ${dup.lineB || 1})](file://${dup.fileB}#L${dup.lineB || 1})** (${dup.funcSimilarity || dup.similarity}% match).\n\n💡 *Fix: Extract this code into a shared utility or React helper hook.*`
+          )
+        });
+      } else if (fileBPath === docPath && dup.lineB) {
+        const startLine = Math.max(0, dup.lineB - 1);
+        const endLine = Math.min(editor.document.lineCount - 1, startLine + 5);
+        const range = new vscode.Range(startLine, 0, endLine, 100);
+        const otherName = path.basename(dup.fileA);
+        decorations.push({
+          range,
+          hoverMessage: new vscode.MarkdownString(
+            `**⚡ StrataMetriq Duplicate Logic Block**\n\nIdentical logic structure matched in **[${otherName} (Line ${dup.lineA || 1})](file://${dup.fileA}#L${dup.lineA || 1})** (${dup.funcSimilarity || dup.similarity}% match).\n\n💡 *Fix: Extract this code into a shared utility or React helper hook.*`
+          )
+        });
+      }
+    }
+    editor.setDecorations(duplicateDecorationType, decorations);
+  };
+
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(doc => updateFileDiagnostics(doc)),
-    vscode.workspace.onDidOpenTextDocument(doc => updateFileDiagnostics(doc))
+    vscode.workspace.onDidOpenTextDocument(doc => updateFileDiagnostics(doc)),
+    vscode.window.onDidChangeActiveTextEditor(editor => applyDuplicateDecorations(editor))
   );
 
   if (vscode.window.activeTextEditor) {
     updateFileDiagnostics(vscode.window.activeTextEditor.document);
   }
+
+  // Background duplicate scan on workspace startup
+  setTimeout(() => {
+    try {
+      const bgScanner = new Scanner();
+      const excludePattern = '{**/.*/**,**/node_modules/**,**/dist/**,**/build/**,**/out/**,**/vendor/**,**/coverage/**,**/dashboard-dist/**,**/scratch/**}';
+      vscode.workspace.findFiles('**/*.{js,ts,jsx,tsx,py,java,kt,go,cs}', excludePattern, 1000).then(async (files) => {
+        for (const file of files) {
+          try {
+            const stat = await vscode.workspace.fs.stat(file);
+            if (stat.size > 300 * 1024) continue;
+            const content = await vscode.workspace.fs.readFile(file);
+            bgScanner.parseFile(file.fsPath, new TextDecoder().decode(content));
+          } catch (e) {}
+        }
+        const graph = bgScanner.getGraph(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath);
+        latestDuplicates = graph.duplicates || [];
+        applyDuplicateDecorations(vscode.window.activeTextEditor);
+      });
+    } catch (e) {}
+  }, 1500);
 
   let disposable = vscode.commands.registerCommand('stratametriq.start', () => {
     const panel = vscode.window.createWebviewPanel(
@@ -149,6 +219,8 @@ export function activate(context: vscode.ExtensionContext) {
                 }
               }
               const graphData = scanner.getGraph();
+              latestDuplicates = graphData.duplicates || [];
+              applyDuplicateDecorations(vscode.window.activeTextEditor);
               
               // Get diagnostics
               const allDiagnostics = vscode.languages.getDiagnostics();
