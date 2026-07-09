@@ -15,6 +15,8 @@ function App() {
   const [selectedApi, setSelectedApi] = useState<string | null>(null);
   const [selectedRiskCategory, setSelectedRiskCategory] = useState<string>('All');
   const [apiSearchQuery, setApiSearchQuery] = useState<string>('');
+  const [globalSearchQuery, setGlobalSearchQuery] = useState<string>('');
+  const [quickFilter, setQuickFilter] = useState<string>('all');
 
   const handleSelectNode = (nodeId: string | null) => {
     setSelectedApi(null);
@@ -80,6 +82,40 @@ function App() {
       }
     }
     handleOpenFile(filePath, targetLine || 1);
+  };
+
+  const handleExportExecutiveReport = () => {
+    const reportData = {
+      title: "StrataMetriq Executive Architecture & DevSecOps Audit",
+      timestamp: new Date().toISOString(),
+      version: "1.4.1",
+      metrics: {
+        totalModules: nodes.length,
+        circularLoops: cycles.length,
+        duplicatePairs: duplicates.length,
+        unusedDependencies: unusedPackages.length
+      },
+      highSeverityRisks: nodes.flatMap((n: any) =>
+        (n.productionRisks || [])
+          .filter((r: any) => r.severity === 'HIGH')
+          .map((r: any) => ({
+            file: n.filePath,
+            line: r.line || 1,
+            category: r.category,
+            message: r.message
+          }))
+      ),
+      circularDependencies: cycles
+    };
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stratametriq-executive-audit-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const getFileName = (pathStr: string) => {
@@ -185,35 +221,58 @@ function App() {
     return { score: Math.round(s), complexity: comp.toFixed(2), totalModulesCount: totalModules, totalPackagesCount: totalPackages };
   }, [nodes, edges, cycles]);
 
+  const filteredNodes = useMemo(() => {
+    return nodes.filter((n: any) => {
+      if (quickFilter === 'highRisks') {
+        const hasHigh = (n.productionRisks || []).some((r: any) => r.severity === 'HIGH');
+        if (!hasHigh) return false;
+      } else if (quickFilter === 'openFiles') {
+        if (!isFileOpen(n.filePath)) return false;
+      } else if (quickFilter === 'circular') {
+        const inCycle = cycles.some(cyc => cyc.includes(n.filePath));
+        if (!inCycle) return false;
+      }
+
+      if (globalSearchQuery.trim()) {
+        const q = globalSearchQuery.toLowerCase();
+        const matchesName = (n.name || n.filePath || '').toLowerCase().includes(q);
+        const matchesApi = (n.apis || n.apisCalled || []).some((api: string) => api.toLowerCase().includes(q));
+        const matchesDb = (n.dbTables || []).some((t: string) => t.toLowerCase().includes(q));
+        return matchesName || matchesApi || matchesDb;
+      }
+      return true;
+    });
+  }, [nodes, quickFilter, globalSearchQuery, cycles]);
+
   const mostComplexFiles = useMemo(() => {
-    if (!nodes || nodes.length === 0) return [];
+    if (!filteredNodes || filteredNodes.length === 0) return [];
 
     const edgeCounts: Record<string, number> = {};
-    nodes.forEach((n: any) => edgeCounts[n.id] = 0);
+    filteredNodes.forEach((n: any) => edgeCounts[n.id] = 0);
 
     edges.forEach((e: any) => {
       if (edgeCounts[e.source] !== undefined) edgeCounts[e.source]++;
       if (edgeCounts[e.target] !== undefined) edgeCounts[e.target]++;
     });
 
-    return [...nodes]
+    return [...filteredNodes]
       .filter((n: any) => (n.type === 'file' || n.type === 'module') && n.type !== 'package' && !n.filePath?.includes('node_modules') && !['react', 'react-dom', 'react-router', 'react-router-dom', 'axios', 'express', 'lodash', 'vue', 'angular', 'next', 'vite', 'typescript'].includes(n.name?.toLowerCase()))
       .map((n: any) => ({ ...n, edgeCount: edgeCounts[n.id] || 0 }))
       .sort((a, b) => b.edgeCount - a.edgeCount)
       .slice(0, 5);
-  }, [nodes, edges]);
+  }, [filteredNodes, edges]);
 
   const problematicFiles = useMemo(() => {
-    if (!nodes || nodes.length === 0) return [];
+    if (!filteredNodes || filteredNodes.length === 0) return [];
 
-    return [...nodes]
+    return [...filteredNodes]
       .filter((n: any) => n.problemCount && n.problemCount > 0)
       .sort((a, b) => (b.problemCount || 0) - (a.problemCount || 0))
       .slice(0, 5);
-  }, [nodes]);
+  }, [filteredNodes]);
 
   const productionRiskFiles = useMemo(() => {
-    return nodes
+    return filteredNodes
       .filter((n: any) => n.productionRisks && n.productionRisks.length > 0)
       .map((n: any) => ({
         ...n,
@@ -221,7 +280,7 @@ function App() {
       }))
       .filter((n: any) => n.filteredRisks.length > 0)
       .sort((a: any, b: any) => b.filteredRisks.length - a.filteredRisks.length);
-  }, [nodes, selectedRiskCategory]);
+  }, [filteredNodes, selectedRiskCategory]);
 
   const totalProductionRisks = useMemo(() => {
     let total = 0;
@@ -674,9 +733,69 @@ function App() {
               </>
             )}
           </button>
+          <button
+            className="hero-action-button"
+            onClick={handleExportExecutiveReport}
+            title="Download JSON Executive Architecture Audit Report"
+            style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', marginLeft: '8px' }}
+          >
+            <span>📥</span> Export Audit JSON
+          </button>
           <span className="hero-meta-note">Offline AST Engine • Zero Telemetry</span>
         </div>
       </header>
+
+      <div className="global-filter-toolbar glass-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.8rem 1.25rem', marginBottom: '1.5rem', borderLeft: '4px solid #38bdf8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '280px' }}>
+          <span style={{ fontSize: '1.1rem' }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Search workspace modules, API routes, or DB tables..."
+            value={globalSearchQuery}
+            onChange={(e) => setGlobalSearchQuery(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '0.55rem 0.95rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              background: 'rgba(15, 23, 42, 0.75)',
+              color: '#f8fafc',
+              fontSize: '0.88rem',
+              outline: 'none'
+            }}
+          />
+          {globalSearchQuery && (
+            <button onClick={() => setGlobalSearchQuery('')} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+          )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginRight: '4px', fontWeight: 600 }}>Quick Filter:</span>
+          {[
+            { id: 'all', label: 'All Modules' },
+            { id: 'highRisks', label: '⚠️ High Risks' },
+            { id: 'openFiles', label: '📂 Open Tabs' },
+            { id: 'circular', label: '🔄 Circular Loops' }
+          ].map(f => (
+            <button
+              key={f.id}
+              onClick={() => setQuickFilter(f.id)}
+              style={{
+                background: quickFilter === f.id ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                color: quickFilter === f.id ? '#38bdf8' : '#94a3b8',
+                border: quickFilter === f.id ? '1px solid #38bdf8' : '1px solid transparent',
+                padding: '5px 14px',
+                borderRadius: '16px',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                fontWeight: quickFilter === f.id ? 'bold' : 'normal',
+                transition: 'all 0.2s'
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="metrics-grid">
         <div className="metric-card glass-card">
@@ -806,7 +925,13 @@ function App() {
                       <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '3px', fontWeight: 'bold', background: risk.severity === 'HIGH' ? 'rgba(239,68,68,0.3)' : risk.severity === 'MEDIUM' ? 'rgba(245,158,11,0.3)' : 'rgba(56,189,248,0.3)', color: risk.severity === 'HIGH' ? '#fca5a5' : risk.severity === 'MEDIUM' ? '#fcd34d' : '#7dd3fc' }}>
                         {risk.severity}
                       </span>
-                      <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(file.filePath, undefined, risk.line || 1); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer', padding: '1px 5px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }} title={`Click to jump directly to Line ${risk.line || 1} in editor`}>[Line {risk.line || 1}]</span>
+                      <span
+                        onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(file.filePath, undefined, risk.line || 1); }}
+                        style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.72rem', textDecoration: 'none', cursor: 'pointer', padding: '2px 7px', background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.5)', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                        title={`Click to jump directly to Line ${risk.line || 1} in editor`}
+                      >
+                        ↗ Line {risk.line || 1}
+                      </span>
                       <span>{risk.category}: {risk.message}</span>
                     </div>
                   ))}

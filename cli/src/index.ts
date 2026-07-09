@@ -354,11 +354,35 @@ async function runScan(
   console.log(`MEDIUM Severity : ${mediumRisks > 0 ? colors.yellow + colors.bold : colors.green}${mediumRisks}${colors.reset}`);
   console.log(`LOW Severity    : ${colors.cyan}${lowRisks}${colors.reset}\n`);
 
+  const getRemediationHint = (category: string): string => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('sql') || cat.includes('injection')) {
+      return '💡 Fix: Use parameterized database queries ($1, ?) or ORM query builders instead of raw string concatenation.';
+    }
+    if (cat.includes('secret') || cat.includes('credential') || cat.includes('token') || cat.includes('password')) {
+      return '💡 Fix: Move sensitive keys/tokens to environment variables (process.env.KEY) or a secure vault.';
+    }
+    if (cat.includes('crypto')) {
+      return '💡 Fix: Upgrade obsolete hashing algorithms (MD5, SHA1) to SHA-256, bcrypt, or Argon2.';
+    }
+    if (cat.includes('debug')) {
+      return '💡 Fix: Remove active debugger/console statements before deployment or wrap in a structured logger.';
+    }
+    if (cat.includes('catch')) {
+      return '💡 Fix: Log the exception or re-throw rather than silently swallowing errors.';
+    }
+    if (cat.includes('dead')) {
+      return '💡 Fix: Remove unreachable statements or unused conditional branches.';
+    }
+    return '💡 Fix: Refactor module to adhere to Pre-Deployment safety standards.';
+  };
+
   if (highRisks > 0) {
     console.log(`${colors.red}${colors.bold}[!] High Severity Risks Detected:${colors.reset}`);
     const risksToShow = changedFilesSet ? allRisks.filter(r => r.risk.severity === 'HIGH' && (changedFilesSet.has(r.file.replace(/\\/g, '/').toLowerCase()) || Array.from(changedFilesSet).some(cf => r.file.replace(/\\/g, '/').toLowerCase().endsWith(cf)))) : allRisks.filter(r => r.risk.severity === 'HIGH');
     risksToShow.slice(0, 10).forEach(r => {
       console.log(`  - [${r.risk.category}] in ${colors.bold}${r.file}:${r.risk.line || 1}${colors.reset} -> ${r.risk.message}`);
+      console.log(`    ${colors.cyan}${getRemediationHint(r.risk.category)}${colors.reset}`);
     });
     if (risksToShow.length > 10) console.log(`  ... and ${risksToShow.length - 10} more HIGH severity risks.`);
     console.log('');
@@ -398,9 +422,10 @@ async function runScan(
     md += `| **LOW Severity Risks** | 🔵 ${lowRisks} |\n\n`;
 
     if (highRisks > 0) {
-      md += `### 🚨 High Severity Risks\n\n`;
+      md += `### 🚨 High Severity Risks & Actionable Fixes\n\n`;
       allRisks.filter(r => r.risk.severity === 'HIGH').forEach(r => {
         md += `- **[${r.risk.category}]** in \`${r.file}:${r.risk.line || 1}\`: ${r.risk.message}\n`;
+        md += `  > ${getRemediationHint(r.risk.category)}\n\n`;
       });
       md += `\n`;
     }

@@ -5,6 +5,53 @@ import { Scanner } from '@stratametriq/scanner';
 export function activate(context: vscode.ExtensionContext) {
   console.log('StrataMetriq is now active!');
 
+  // Pillar 2: Persistent Status Bar Item
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  statusBarItem.command = 'stratametriq.start';
+  statusBarItem.text = '$(shield) StrataMetriq: Ready';
+  statusBarItem.tooltip = 'Click to open StrataMetriq Architecture & DevSecOps Dashboard';
+  statusBarItem.show();
+  context.subscriptions.push(statusBarItem);
+
+  // Pillar 2: Live Editor Diagnostics Collection
+  const diagnosticCollection = vscode.languages.createDiagnosticCollection('stratametriq');
+  context.subscriptions.push(diagnosticCollection);
+
+  const updateFileDiagnostics = (doc: vscode.TextDocument) => {
+    if (doc.uri.scheme !== 'file') return;
+    const ext = path.extname(doc.uri.fsPath).toLowerCase();
+    if (!['.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.kt', '.go', '.cs'].includes(ext)) return;
+    try {
+      const singleScanner = new Scanner();
+      const node = singleScanner.parseFile(doc.uri.fsPath, doc.getText());
+      const diagnostics: vscode.Diagnostic[] = [];
+      if (node && node.productionRisks) {
+        for (const risk of node.productionRisks) {
+          const lineIdx = Math.max(0, (risk.line || 1) - 1);
+          const range = new vscode.Range(new vscode.Position(lineIdx, 0), new vscode.Position(lineIdx, 100));
+          const severity = risk.severity === 'HIGH' ? vscode.DiagnosticSeverity.Error
+            : risk.severity === 'MEDIUM' ? vscode.DiagnosticSeverity.Warning
+            : vscode.DiagnosticSeverity.Information;
+          const diagnostic = new vscode.Diagnostic(range, `StrataMetriq [${risk.category}]: ${risk.message}`, severity);
+          diagnostic.source = 'StrataMetriq';
+          diagnostics.push(diagnostic);
+        }
+      }
+      diagnosticCollection.set(doc.uri, diagnostics);
+    } catch (e) {
+      // ignore live syntax errors
+    }
+  };
+
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument(doc => updateFileDiagnostics(doc)),
+    vscode.workspace.onDidOpenTextDocument(doc => updateFileDiagnostics(doc))
+  );
+
+  if (vscode.window.activeTextEditor) {
+    updateFileDiagnostics(vscode.window.activeTextEditor.document);
+  }
+
   let disposable = vscode.commands.registerCommand('stratametriq.start', () => {
     const panel = vscode.window.createWebviewPanel(
       'stratametriqDashboard',
@@ -147,6 +194,38 @@ export function activate(context: vscode.ExtensionContext) {
                 } else {
                   node.problems = existingProblems;
                   node.problemCount = existingProblems.length;
+                }
+              }
+
+              // Update status bar with scan results
+              const allRisks = graphData.nodes.flatMap((n: any) => n.productionRisks || []);
+              const highRisks = allRisks.filter((r: any) => r.severity === 'HIGH');
+              if (highRisks.length > 0) {
+                statusBarItem.text = `$(error) StrataMetriq: ${highRisks.length} High Risk${highRisks.length > 1 ? 's' : ''}`;
+                statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+              } else if (allRisks.length > 0) {
+                statusBarItem.text = `$(warning) StrataMetriq: ${allRisks.length} Audit Note${allRisks.length > 1 ? 's' : ''}`;
+                statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+              } else {
+                statusBarItem.text = `$(check) StrataMetriq: Perfect Health`;
+                statusBarItem.backgroundColor = undefined;
+              }
+
+              // Update editor diagnostic squiggles across scanned files
+              diagnosticCollection.clear();
+              for (const n of graphData.nodes) {
+                if (n.productionRisks && n.productionRisks.length > 0) {
+                  const diags: vscode.Diagnostic[] = n.productionRisks.map((r: any) => {
+                    const lineIdx = Math.max(0, (r.line || 1) - 1);
+                    const range = new vscode.Range(new vscode.Position(lineIdx, 0), new vscode.Position(lineIdx, 100));
+                    const sev = r.severity === 'HIGH' ? vscode.DiagnosticSeverity.Error
+                      : r.severity === 'MEDIUM' ? vscode.DiagnosticSeverity.Warning
+                      : vscode.DiagnosticSeverity.Information;
+                    const d = new vscode.Diagnostic(range, `StrataMetriq [${r.category}]: ${r.message}`, sev);
+                    d.source = 'StrataMetriq';
+                    return d;
+                  });
+                  diagnosticCollection.set(vscode.Uri.file(n.filePath), diags);
                 }
               }
 
