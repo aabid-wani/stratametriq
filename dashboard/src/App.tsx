@@ -154,11 +154,11 @@ function App() {
     };
   }, [selectedNodeId, nodes, edges]);
 
-  const { score, complexity } = useMemo(() => {
-    if (nodes.length === 0) return { score: 100, complexity: 0 };
-    
-    const internalNodes = nodes.filter((n: any) => n.type === 'file' || n.type === 'module');
-    const totalModules = internalNodes.length > 0 ? internalNodes.length : nodes.length;
+  const { score, complexity, totalModulesCount, totalPackagesCount } = useMemo(() => {
+    if (nodes.length === 0) return { score: 100, complexity: '0.00', totalModulesCount: 0, totalPackagesCount: 0 };
+    const moduleNodes = nodes.filter((n: any) => n.type === 'module');
+    const totalModules = moduleNodes.length > 0 ? moduleNodes.length : Math.max(1, nodes.filter((n: any) => n.type !== 'package').length);
+    const totalPackages = nodes.filter((n: any) => n.type === 'package').length;
     
     const comp = edges.length / totalModules;
     
@@ -167,6 +167,7 @@ function App() {
     nodes.forEach((n: any) => {
       if (n.productionRisks) {
         n.productionRisks.forEach((r: any) => {
+           if (r.category === 'Large commented code blocks') return;
            if (r.severity === 'HIGH') highRisks++;
            if (r.severity === 'MEDIUM') mediumRisks++;
         });
@@ -175,13 +176,14 @@ function App() {
 
     const highRiskDensity = highRisks / totalModules;
     const mediumRiskDensity = mediumRisks / totalModules;
+    const circularDensity = (cycles && cycles.length ? cycles.length : 0) / totalModules;
     
-    let s = 100 - (comp * 1.5) - (highRiskDensity * 40) - (mediumRiskDensity * 15);
+    let s = 100 - (comp * 1.5) - (highRiskDensity * 40) - (mediumRiskDensity * 15) - (circularDensity * 100);
     
     if (s < 10) s = 10;
     if (s > 100) s = 100;
-    return { score: Math.round(s), complexity: comp.toFixed(2) };
-  }, [nodes, edges]);
+    return { score: Math.round(s), complexity: comp.toFixed(2), totalModulesCount: totalModules, totalPackagesCount: totalPackages };
+  }, [nodes, edges, cycles]);
 
   const mostComplexFiles = useMemo(() => {
     if (!nodes || nodes.length === 0) return [];
@@ -641,14 +643,24 @@ function App() {
     <div className="dashboard-container">
 
 
-      <header className="glass-header flex-header">
-        <div className="header-titles">
-          <h1>Strata<span>Metriq</span></h1>
-          <p className="subtitle">Architecture Intelligence & Pre-Deployment Safety in VS Code</p>
+      <header className="hero-header-card">
+        <div className="hero-brand-area">
+          <div className="hero-badge-row">
+            <span className="hero-status-pill">
+              <span className="hero-status-dot" /> ACTIVE MONITORING
+            </span>
+            <span className="hero-version-badge">v1.4.1</span>
+          </div>
+          <h1 className="hero-title">
+            Strata<span>Metriq</span>
+          </h1>
+          <p className="hero-subtitle">
+            <span>🛡️</span> DevSecOps Architecture Governance & Pre-Deployment Safety Gate
+          </p>
         </div>
-        <div className="header-actions">
+        <div className="hero-action-area">
           <button
-            className={`primary-btn ${scanning ? 'scanning' : ''}`}
+            className="hero-action-button"
             onClick={handleScan}
             disabled={scanning}
           >
@@ -658,10 +670,11 @@ function App() {
               </>
             ) : (
               <>
-                <span style={{ marginRight: '6px' }}>⚡</span> Run Deep Analysis
+                <span>⚡</span> Run Deep Analysis
               </>
             )}
           </button>
+          <span className="hero-meta-note">Offline AST Engine • Zero Telemetry</span>
         </div>
       </header>
 
@@ -681,8 +694,8 @@ function App() {
 
         <div className="metric-card glass-card">
           <h3>Graph Overview</h3>
-          <p className="big-stat">{scanning ? '...' : nodes.length}</p>
-          <p className="stat-label">Files mapped</p>
+          <p className="big-stat">{scanning ? '...' : totalModulesCount}</p>
+          <p className="stat-label">Files mapped {totalPackagesCount > 0 ? `(${totalPackagesCount} pkgs)` : ''}</p>
           <p className="big-stat small-mt">{scanning ? '...' : edges.length}</p>
           <p className="stat-label">Imports found</p>
         </div>

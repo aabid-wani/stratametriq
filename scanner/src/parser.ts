@@ -154,7 +154,7 @@ export class Scanner {
           if (consecutiveComments === 0) commentStartLine = idx + 1;
           consecutiveComments++;
           if (consecutiveComments >= 2) {
-            risks.push({ category: 'Large commented code blocks', message: 'Found commented-out code or inactive logic block (2+ lines)', severity: 'MEDIUM', line: commentStartLine });
+            risks.push({ category: 'Large commented code blocks', message: 'Found commented-out code or inactive logic block (2+ lines)', severity: 'LOW', line: commentStartLine });
             break;
           }
         }
@@ -165,7 +165,7 @@ export class Scanner {
     if (!risks.some(r => r.category === 'Large commented code blocks')) {
       for (let idx = 0; idx < lines.length; idx++) {
         if (/\/\*[\s\S]*?([;={}\(\)]|\b(function|const|let|import|export|return|if|for|class)\b)/.test(lines[idx]) || /\{\/\*/.test(lines[idx])) {
-          risks.push({ category: 'Large commented code blocks', message: 'Found block comment containing commented-out source code', severity: 'MEDIUM', line: idx + 1 });
+          risks.push({ category: 'Large commented code blocks', message: 'Found block comment containing commented-out source code', severity: 'LOW', line: idx + 1 });
           break;
         }
       }

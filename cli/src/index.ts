@@ -19,7 +19,7 @@ const colors = {
 
 function printBanner() {
   console.log(`${colors.bold}${colors.cyan}================================================================${colors.reset}`);
-  console.log(`${colors.bold}${colors.cyan}  StrataMetriq CLI v1.3.1 - DevSecOps Architecture Governance   ${colors.reset}`);
+  console.log(`${colors.bold}${colors.cyan}  StrataMetriq CLI v1.4.1 - DevSecOps Architecture Governance   ${colors.reset}`);
   console.log(`${colors.bold}${colors.cyan}================================================================${colors.reset}\n`);
 }
 
@@ -241,6 +241,10 @@ async function runScan(
         const normFile = node.filePath.replace(/\\/g, '/').toLowerCase();
         const isChanged = changedFilesSet ? (changedFilesSet.has(normFile) || Array.from(changedFilesSet).some(cf => normFile.endsWith(cf))) : true;
         
+        if (risk.category === 'Large commented code blocks') {
+          lowRisks++;
+          return;
+        }
         if (risk.severity === 'HIGH') {
           highRisks++;
           if (isChanged) prHighRisks++;
