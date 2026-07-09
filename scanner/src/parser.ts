@@ -1,6 +1,7 @@
 import * as ts from 'typescript';
 import * as path from 'path';
 import { Node, Edge, Graph } from '@stratametriq/shared';
+import { loadGovernanceRules, evaluateArchitectureGovernance } from './governance';
 
 export class Scanner {
   private graph: Graph = { nodes: [], edges: [], duplicates: [] };
@@ -542,7 +543,7 @@ export class Scanner {
     ts.forEachChild(node, (n) => this.visitNode(n, currentFilePath, graphNode, sourceFile));
   }
 
-  public getGraph(): Graph {
+  public getGraph(workspaceRoot?: string): Graph {
     for (const edge of this.graph.edges) {
       if (!this.nodeIds.has(edge.target)) {
         const possibleExts = ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs', '.py', '.java', '.go', '.cs', '.rb', '.php', '.rs', '.cpp', '.h', '/index.js', '/index.ts', '/index.jsx', '/index.tsx', '/__init__.py'];
@@ -708,6 +709,11 @@ export class Scanner {
       }
     }
     this.graph.unusedPackages = unusedPackages;
+
+    if (workspaceRoot) {
+      const rules = loadGovernanceRules(workspaceRoot);
+      evaluateArchitectureGovernance(this.graph, rules);
+    }
 
     return this.graph;
   }

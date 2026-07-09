@@ -76,6 +76,37 @@ When generating Markdown PR reports (`--md pr-report.md`), these remediation ins
 
 ---
 
+## 🏛️ Enterprise Custom Architecture Governance (`stratametriq.config.yml`)
+
+StrataMetriq allows engineering teams to define organizational architecture standards and boundary rules in a root `stratametriq.config.yml` file.
+
+### Initialize Configuration
+Run the interactive wizard to generate starter config files:
+```bash
+npx @stratametriq/cli init
+```
+
+### Example `stratametriq.config.yml`
+```yaml
+version: 1
+rules:
+  - name: "UI layer cannot import Database layer directly"
+    source: "src/ui/**"
+    forbiddenTarget: "src/db/**"
+    severity: "HIGH"
+    message: "UI components must go through src/services/ or API endpoints."
+
+  - name: "Domain isolation"
+    source: "src/domain/**"
+    forbiddenTarget: "src/infra/**"
+    severity: "HIGH"
+    message: "Domain layer must remain decoupled from infrastructure details."
+```
+
+Any illegal import boundary violation will automatically trigger a **HIGH severity failure** during `stratametriq scan .` runs and block CI/CD pipelines when `--fail-on-high` is passed.
+
+---
+
 ## 🤖 Integrating with CI/CD Pipelines
 
 ### 1. GitHub Actions Workflow (`.github/workflows/stratametriq.yml`)

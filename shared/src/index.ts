@@ -44,12 +44,30 @@ export interface UnusedPackage {
   type?: string;
 }
 
+export interface CustomArchitectureRule {
+  name: string;
+  source: string;          // Glob or path substring matching source file
+  forbiddenTarget: string; // Glob or path substring matching imported target file
+  severity?: 'HIGH' | 'MEDIUM' | 'LOW';
+  message?: string;
+}
+
+export interface CustomRuleViolation {
+  ruleName: string;
+  sourceFile: string;
+  targetFile: string;
+  line?: number;
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+  message: string;
+}
+
 export interface Graph {
   nodes: Node[];
   edges: Edge[];
   duplicates?: DuplicatePair[];
   cycles?: string[][]; // Array of circular dependency import paths
   unusedPackages?: UnusedPackage[];
+  customRuleViolations?: CustomRuleViolation[];
 }
 
 export interface HealthScore {

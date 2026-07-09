@@ -377,6 +377,16 @@ async function runScan(
     return '💡 Fix: Refactor module to adhere to Pre-Deployment safety standards.';
   };
 
+  if (graph.customRuleViolations && graph.customRuleViolations.length > 0) {
+    console.log(`${colors.red}${colors.bold}--- 🏛️ Enterprise Custom Architecture Governance Violations ---${colors.reset}`);
+    graph.customRuleViolations.forEach(v => {
+      console.log(`  🚫 [FAIL] ${colors.bold}${v.ruleName}${colors.reset}`);
+      console.log(`     Violation: ${v.sourceFile} -> ${v.targetFile}`);
+      console.log(`     ${colors.cyan}💡 Fix: ${v.message}${colors.reset}`);
+    });
+    console.log('');
+  }
+
   if (highRisks > 0) {
     console.log(`${colors.red}${colors.bold}[!] High Severity Risks Detected:${colors.reset}`);
     const risksToShow = changedFilesSet ? allRisks.filter(r => r.risk.severity === 'HIGH' && (changedFilesSet.has(r.file.replace(/\\/g, '/').toLowerCase()) || Array.from(changedFilesSet).some(cf => r.file.replace(/\\/g, '/').toLowerCase().endsWith(cf)))) : allRisks.filter(r => r.risk.severity === 'HIGH');
@@ -635,30 +645,49 @@ async function main() {
 
   if (command === 'init') {
     const rcPath = path.resolve(process.cwd(), '.stratametriqrc.json');
-    if (fs.existsSync(rcPath)) {
-      console.log(`${colors.yellow}[!] .stratametriqrc.json already exists in ${process.cwd()}${colors.reset}`);
-      process.exit(0);
+    const ymlPath = path.resolve(process.cwd(), 'stratametriq.config.yml');
+    if (!fs.existsSync(rcPath)) {
+      const defaultRc = {
+        "ignoreDirs": ["node_modules", ".git", "dist", "build", "coverage", ".cache"],
+        "qualityGates": {
+          "failOnHigh": false,
+          "failOnCircular": false,
+          "maxCircular": null,
+          "minHealthScore": 50
+        },
+        "reporting": {
+          "jsonOut": null,
+          "mdOut": null,
+          "htmlOut": null
+        }
+      };
+      fs.writeFileSync(rcPath, JSON.stringify(defaultRc, null, 2), 'utf8');
     }
-    const defaultRc = {
-      "ignoreDirs": ["node_modules", ".git", "dist", "build", "coverage", ".cache"],
-      "qualityGates": {
-        "failOnHigh": false,
-        "failOnCircular": false,
-        "maxCircular": null,
-        "minHealthScore": 50
-      },
-      "reporting": {
-        "jsonOut": null,
-        "mdOut": null,
-        "htmlOut": null
-      }
-    };
-    fs.writeFileSync(rcPath, JSON.stringify(defaultRc, null, 2), 'utf8');
+
+    if (!fs.existsSync(ymlPath)) {
+      const defaultYml = `# StrataMetriq Enterprise Custom Architecture Governance Rules
+version: 1
+rules:
+  - name: "UI layer cannot import Database layer directly"
+    source: "src/ui/**"
+    forbiddenTarget: "src/db/**"
+    severity: "HIGH"
+    message: "UI components must go through src/services/ or API endpoints."
+
+  - name: "Domain boundary isolation"
+    source: "src/domain/**"
+    forbiddenTarget: "src/infra/**"
+    severity: "HIGH"
+    message: "Domain layer must remain decoupled from infrastructure details."
+`;
+      fs.writeFileSync(ymlPath, defaultYml, 'utf8');
+    }
+
     console.log(`${colors.bold}${colors.cyan}================================================================${colors.reset}`);
-    console.log(`${colors.bold}${colors.cyan}  StrataMetriq CLI v1.3.1 - Interactive Configuration Wizard    ${colors.reset}`);
+    console.log(`${colors.bold}${colors.cyan}  StrataMetriq CLI v1.4.1 - Enterprise Governance Wizard        ${colors.reset}`);
     console.log(`${colors.bold}${colors.cyan}================================================================${colors.reset}\n`);
-    console.log(`${colors.green}[+] Created default configuration file: ${rcPath}${colors.reset}`);
-    console.log(`${colors.gray}You can customize ignore rules and CI/CD quality gates in this file.${colors.reset}\n`);
+    console.log(`${colors.green}[+] Created configuration files:\n    - ${rcPath}\n    - ${ymlPath}${colors.reset}`);
+    console.log(`${colors.gray}You can customize architecture boundary rules in stratametriq.config.yml.${colors.reset}\n`);
     process.exit(0);
   }
 

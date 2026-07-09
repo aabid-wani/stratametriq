@@ -72,6 +72,20 @@ Quantifies your project's technical debt into clear, actionable visibility:
 * **One-Click Executive Audit Export (`📥 Export Audit JSON`)**: Download a complete JSON audit report of project health, duplicate pairs, circular loops, and high-severity findings directly from the webview header.
 * **Actionable `💡 Fix` Remediation Guides**: Both the headless CLI (`stratametriq scan .`) and automated Markdown PR comments output clear 1-line remediation instructions below every high-severity finding.
 
+### 8. 🏛️ Enterprise Custom Architecture Governance (`stratametriq.config.yml`)
+Enforce organizational architecture standards across your monorepo or layered application. Define forbidden import boundaries in a root `stratametriq.config.yml` file:
+```yaml
+version: 1
+rules:
+  - name: "UI layer cannot import Database layer directly"
+    source: "src/ui/**"
+    forbiddenTarget: "src/db/**"
+    severity: "HIGH"
+    message: "UI components must go through src/services/ or API endpoints."
+```
+* **Instant IDE & CLI Enforcement**: Any violation is automatically flagged with red diagnostic squiggles in VS Code, surfaced as a high-severity finding on the dashboard, and reported in headless CLI pipeline runs.
+* **Generate Template Config**: Simply run `npx @stratametriq/cli init` to generate starter configuration files automatically.
+
 ---
 
 ## 🥊 Market Comparison: Why StrataMetriq?
