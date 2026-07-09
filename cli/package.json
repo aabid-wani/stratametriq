@@ -1,6 +1,6 @@
 {
   "name": "@stratametriq/cli",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Headless CLI and CI/CD DevSecOps Governance Gate for StrataMetriq",
   "license": "MIT",
   "keywords": [

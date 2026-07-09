@@ -1,6 +1,6 @@
 {
   "name": "@stratametriq/shared",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Core TypeScript Interfaces and Graph Models for StrataMetriq",
   "license": "MIT",
   "keywords": [

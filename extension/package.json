@@ -2,7 +2,7 @@
   "name": "stratametriq-extension",
   "displayName": "StrataMetriq",
   "description": "Architecture Intelligence & Pre-Deployment Safety in VS Code",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "publisher": "stratametriq",
   "icon": "icon.png",
   "engines": {

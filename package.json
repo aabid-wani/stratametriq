@@ -1,6 +1,6 @@
 {
   "name": "stratametriq",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "private": true,
   "description": "StrataMetriq - Architecture Intelligence & Pre-Deployment Safety in VS Code",
   "workspaces": [
