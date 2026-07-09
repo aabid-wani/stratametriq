@@ -1,6 +1,6 @@
 {
   "name": "@stratametriq/cli",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Headless CLI and CI/CD DevSecOps Governance Gate for StrataMetriq",
   "bin": {
     "stratametriq": "dist/index.js"

@@ -1,12 +1,8 @@
 {
   "name": "stratametriq",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "private": true,
   "description": "StrataMetriq - Architecture Intelligence & Pre-Deployment Safety in VS Code",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aabid-wani/stratametriq.git"
-  },
   "workspaces": [
     "extension",
     "scanner",
