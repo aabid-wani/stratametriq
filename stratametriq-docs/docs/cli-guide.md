@@ -54,7 +54,8 @@ In automated CI/CD pipelines, process exit codes control whether a Pull Request 
 | `--fail-on-high` | Security vulnerability gate. | Exits with **Exit Code `1`** (fails pipeline) if any HIGH severity risk (SQLi, XSS, Crypto, Secrets) is detected. |
 | `--fail-on-circular` | Architectural loop gate. | Exits with **Exit Code `1`** if any circular dependency loops are detected. |
 | `--max-circular <N>` | Sets a custom threshold for circular loops. | Fails build only if circular loops exceed `<N>`. |
-| `--json <file>` | Exports full AST graph and audit data to JSON. | Perfect for SBOM generation or SonarQube integration. |
+| `--json <file>` | Exports full AST graph and audit data to JSON. | Perfect for SBOM generation or custom analytics integration. |
+| `--sarif <file>` | Exports OASIS SARIF 2.1.0 security report. | Directly uploads into GitHub Advanced Security / GitLab Security PR code tabs. |
 | `--md <file>` | Exports GitHub-flavored Markdown report. | Can be fed directly into `gh pr comment` in GitHub Actions. |
 
 ---
@@ -80,8 +81,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run StrataMetriq DevSecOps Gate
-        run: npx @stratametriq/cli scan . --fail-on-high --md pr-report.md
+      - name: Run StrataMetriq DevSecOps Gate & Generate SARIF
+        run: npx @stratametriq/cli scan . --sarif stratametriq.sarif --md pr-report.md
+
+      - name: Upload SARIF to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: stratametriq.sarif
 
       - name: Comment Audit Summary on PR
         if: github.event_name == 'pull_request' && always()

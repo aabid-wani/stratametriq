@@ -10,23 +10,24 @@
 
 ## 🌟 Key Features & Superpowers
 
-### 🌐 Full-Stack Polyglot Architecture Support (NEW in v1.3.0)
-StrataMetriq natively parses ASTs and raw source heuristics across modern multi-language repositories without needing external interpreters or heavy IDE plugins:
-* **Supported Languages**: Python (`.py`), Java (`.java`), Go (`.go`), C# (`.cs`), JavaScript/TypeScript (`.js`, `.ts`, `.jsx`, `.tsx`), Ruby (`.rb`), PHP (`.php`), Rust (`.rs`), C++ (`.cpp`), C (`.c`), and header files (`.h`).
-* **Cross-Stack Vertical Flow**: Traces frontend API calls (`fetch('/api/users')`) directly into Python FastAPI (`@app.get(...)`), Java Spring Boot (`@GetMapping(...)`), or Go Gin (`r.GET(...)`) controllers, linking all the way down to ORM database tables (`__tablename__`, `@Table`).
-* **Language-Aware Safety Audits**: Evaluates all 13 Pre-Deployment Safety Audit categories across polyglot files, correctly recognizing language-specific syntax such as `#` comments and debug calls like `print()`, `System.out.println()`, or `fmt.Println()`.
+### 🌐 Full-Stack Enterprise Polyglot Architecture Support (NEW in v1.4.1)
+StrataMetriq natively parses ASTs and framework semantics across modern multi-language enterprise repositories without needing external interpreters or heavy IDE plugins:
+* **Supported Languages**: Python (`.py`), Java (`.java`), Kotlin (`.kt`), Go (`.go`), C# (`.cs`), JavaScript/TypeScript (`.js`, `.ts`, `.jsx`, `.tsx`), Ruby (`.rb`), PHP (`.php`), Rust (`.rs`), C++ (`.cpp`), and C (`.c`).
+* **Enterprise Backend Frameworks**: Natively detects API routes and ORM entities for Python **FastAPI / Django**, Java & Kotlin **Spring Boot / JPA**, C# **ASP.NET Core / Entity Framework**, and Go **Gin / Echo / GORM**.
+* **Cross-Stack Vertical Flow**: Traces frontend API calls (`fetch('/api/users')`) directly into backend framework endpoints (`@GetMapping(...)`, `@app.get(...)`, `r.GET(...)`), linking all the way down to ORM database tables (`__tablename__`, `@Table`).
 
-### 1. 🛡️ Automated 9-Point Pre-Deployment Safety Audit
-Before deploying your application, StrataMetriq scans 100% of your codebase in seconds to ensure no debugging artifacts, credentials, or unfinished work leak into production. It displays a glowing `✅ Ready for Production` badge or a high-alert `⛔ DO NOT DEPLOY` banner.
-* **🔑 Hardcoded Secrets & Credentials**: Detects API keys, JWT tokens, AWS credentials, passwords, and hardcoded IPs/connection strings with **Zero False-Positive Precision** (safely ignores dynamic template strings `${...}` and session storage calls).
-* **🐞 Active Debug Code**: Identifies active `console.log`, `debugger;`, and `alert()` statements (ignoring commented-out lines).
-* **🚧 Temporary Code**: Highlights developer hack annotations (`// WIP`, `// HACK`, `// TEMP`).
-* **🧪 Test Data & Suites**: Prevents test fixtures, mock data, or test users from leaking into production builds.
-* **📌 TODO & FIXME Notes**: Tracks unresolved developer tasks and to-do notes.
-* **💬 Large Commented Code Blocks**: Catches inactive logic blocks and commented-out source code.
-* **⚰️ Dead Code**: Flags unreachable statements after `return`/`throw` and dead conditional branches like `if (false)`.
-* **🕳️ Empty Catch Blocks**: Identifies swallowed exceptions and silent failure points.
-* **📦 Unused Development Imports**: Detects development or testing libraries imported into production modules.
+### 🛡️ Automated 13-Point Pre-Deployment DevSecOps Safety Audit
+Before deploying your application, StrataMetriq scans 100% of your codebase in seconds to ensure no debugging artifacts, credentials, or insecure patterns leak into production. It displays a glowing `✅ Ready for Production` badge or a high-alert `⛔ DO NOT DEPLOY` banner.
+* **🔑 Hardcoded Secrets & Credentials**: Detects API keys, JWT tokens, AWS credentials, passwords, and hardcoded IPs/connection strings with **Zero False-Positive Precision**.
+* **💉 SQL Injection & Query Concatenation**: Identifies dangerous raw SQL string concatenation inside database queries.
+* **🔓 Insecure Cryptography**: Detects usage of obsolete hashing algorithms (`MD5`, `SHA1`).
+* **🐞 Active Debug Code**: Identifies active `console.log`, `print()`, `System.out.println()`, `fmt.Println()`, `debugger;`, and `alert()` statements.
+* **🚧 Temporary Code & TODO Notes**: Highlights developer hack annotations (`// WIP`, `// HACK`, `// TEMP`, `TODO`, `FIXME`).
+* **💬 Large Commented Code Blocks**: Flags commented-out logic blocks (reported as informational without penalizing your Project Health Score).
+* **⚰️ Dead Code & Unused Imports**: Flags unreachable statements after `return`/`throw`, dead branches, and unused development dependencies.
+
+### 📊 SARIF 2.1.0 Export & CI/CD Security Pipeline Integration
+StrataMetriq outputs standard **OASIS SARIF 2.1.0** reports (`--sarif results.sarif`) so your security team can ingest architectural risks and vulnerabilities directly into **GitHub Advanced Security** or **GitLab Security Center** Pull Request diff tabs.
 
 ### 2. 🔀 Dynamic API Request Lifecycle Visualizer
 Click any API endpoint in your project (e.g., `GET /role/:name`, `GETVENDOR /vendors`, or `POST /api/users`) to generate an instant vertical trace of the request flow across your full-stack architecture.

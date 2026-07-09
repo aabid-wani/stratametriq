@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import * as path from 'path';
 import * as fs from 'fs';
-import { Scanner } from '@stratametriq/scanner';
+import { Scanner, generateSarifReport } from '@stratametriq/scanner';
 import { Graph, ProductionRisk } from '@stratametriq/shared';
 
 // Simple ANSI color codes for terminal formatting
@@ -40,6 +40,7 @@ function printHelp() {
   console.log('  --max-circular <N>      Fail pipeline if circular dependencies exceed threshold N');
   console.log('  --min-health <N>        Fail pipeline if project health score drops below N (1-100)');
   console.log('  --json <file>           Export full architecture graph & audit to JSON file');
+  console.log('  --sarif <file>          Export SARIF 2.1.0 report (for GitHub Advanced Security / GitLab)');
   console.log('  --md <file>             Export Markdown summary (ideal for CI PR bot comments)');
   console.log('  --help                  Show help documentation\n');
 }
@@ -82,6 +83,7 @@ async function runScan(
   maxCircular: number | null,
   minHealthScore: number | null,
   jsonOut: string | null,
+  sarifOut: string | null,
   mdOut: string | null,
   htmlOut: string | null,
   diffRef: string | null,
@@ -369,6 +371,14 @@ async function runScan(
     console.log(`${colors.green}[+] JSON architecture report exported to: ${outPath}${colors.reset}`);
   }
 
+  // Export SARIF 2.1.0 Report
+  if (sarifOut) {
+    const outPath = path.resolve(process.cwd(), sarifOut);
+    const sarifReport = generateSarifReport(graph, '1.4.1', targetDir);
+    fs.writeFileSync(outPath, JSON.stringify(sarifReport, null, 2), 'utf8');
+    console.log(`${colors.green}[+] SARIF 2.1.0 security report exported to: ${outPath}${colors.reset}`);
+  }
+
   // Export Markdown Report
   if (mdOut) {
     const outPath = path.resolve(process.cwd(), mdOut);
@@ -553,6 +563,7 @@ async function main() {
   let maxCircular: number | null = config?.qualityGates?.maxCircular !== undefined ? config.qualityGates.maxCircular : null;
   let minHealthScore: number | null = config?.qualityGates?.minHealthScore !== undefined ? config.qualityGates.minHealthScore : null;
   let jsonOut: string | null = config?.reporting?.jsonOut || null;
+  let sarifOut: string | null = config?.reporting?.sarifOut || null;
   let mdOut: string | null = config?.reporting?.mdOut || null;
   let htmlOut: string | null = config?.reporting?.htmlOut || null;
   let diffRef: string | null = null;
@@ -580,6 +591,8 @@ async function main() {
       minHealthScore = parseInt(args[++i] || '50', 10);
     } else if (arg === '--json') {
       jsonOut = args[++i] || 'stratametriq-report.json';
+    } else if (arg === '--sarif') {
+      sarifOut = args[++i] || 'stratametriq-report.sarif';
     } else if (arg === '--md') {
       mdOut = args[++i] || 'stratametriq-report.md';
     } else if (arg === '--html') {
@@ -590,7 +603,7 @@ async function main() {
       isPrune = true;
     } else if (arg === '--watch' || arg === '-w') {
       isWatch = true;
-    } else if (!arg.startsWith('-') && arg !== 'scan' && arg !== 'init' && arg !== 'impact' && arg !== impactFile && arg !== diffRef && arg !== jsonOut && arg !== mdOut && arg !== htmlOut) {
+    } else if (!arg.startsWith('-') && arg !== 'scan' && arg !== 'init' && arg !== 'impact' && arg !== impactFile && arg !== diffRef && arg !== jsonOut && arg !== sarifOut && arg !== mdOut && arg !== htmlOut) {
       targetDir = path.resolve(process.cwd(), arg);
     }
   }
@@ -628,7 +641,7 @@ async function main() {
     console.log(`${colors.gray}[i] Loaded project configuration from .stratametriqrc.json${colors.reset}\n`);
   }
 
-  await runScan(targetDir, command, impactFile, failOnHigh, failOnCircular, maxCircular, minHealthScore, jsonOut, mdOut, htmlOut, diffRef, isPrune, isWatch);
+  await runScan(targetDir, command, impactFile, failOnHigh, failOnCircular, maxCircular, minHealthScore, jsonOut, sarifOut, mdOut, htmlOut, diffRef, isPrune, isWatch);
 
   if (isWatch) {
     console.log(`${colors.bold}${colors.cyan}👁️  Watch Mode Active: Monitoring ${targetDir} for changes... (Press Ctrl+C to exit)${colors.reset}`);
@@ -639,7 +652,7 @@ async function main() {
       timer = setTimeout(async () => {
         console.clear();
         console.log(`${colors.bold}${colors.yellow}🔄 File change detected (${filename}). Re-scanning...${colors.reset}\n`);
-        await runScan(targetDir, command, impactFile, failOnHigh, failOnCircular, maxCircular, minHealthScore, jsonOut, mdOut, htmlOut, diffRef, isPrune, true);
+        await runScan(targetDir, command, impactFile, failOnHigh, failOnCircular, maxCircular, minHealthScore, jsonOut, sarifOut, mdOut, htmlOut, diffRef, isPrune, true);
         console.log(`${colors.bold}${colors.cyan}👁️  Watch Mode Active: Monitoring ${targetDir} for changes... (Press Ctrl+C to exit)${colors.reset}`);
       }, 300);
     });
