@@ -1,6 +1,7 @@
 # StrataMetriq: Comprehensive End-to-End User Manual & Technical Architecture Guide (v1.3.0)
 
-> **🌐 Official GitHub Repository:** [https://github.com/aabid-wani/stratametriq](https://github.com/aabid-wani/stratametriq)  
+> **StrataMetriq helps engineering teams understand software architecture, predict the impact of code changes, and prevent risky deployments before they happen.**
+
 > **📦 VS Code Marketplace:** `stratametriq.stratametriq-extension`
 
 Welcome to the authoritative engineering guide and user manual for **StrataMetriq**, an enterprise-grade Visual Studio Code extension designed to deliver **Architecture Intelligence & Pre-Deployment Safety** for full-stack JavaScript and TypeScript codebases. 

@@ -1,5 +1,7 @@
 # StrataMetriq — Architecture Intelligence & Pre-Deployment Safety for VS Code
 
+> **StrataMetriq helps engineering teams understand software architecture, predict the impact of code changes, and prevent risky deployments before they happen.**
+
 **StrataMetriq** is an enterprise-grade Visual Studio Code extension that delivers **360° Architectural Visibility, Interactive Dependency Explorer, and 13-Point Pre-Deployment Safety Auditing** directly inside your editor.
 
 ---

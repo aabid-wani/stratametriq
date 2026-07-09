@@ -1,5 +1,7 @@
 # @stratametriq/scanner — Polyglot AST Analysis & Pre-Deployment Safety Engine
 
+> **StrataMetriq helps engineering teams understand software architecture, predict the impact of code changes, and prevent risky deployments before they happen.**
+
 **@stratametriq/scanner** is the core local AST engine powering **StrataMetriq**. It parses source files across JavaScript/TypeScript, Python, Java, Kotlin, Go, and C# to generate unified dependency graphs, detect circular loops, extract API routes/SQL tables, and evaluate 13 categories of pre-deployment production risks.
 
 ---

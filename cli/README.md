@@ -3,6 +3,8 @@
 [![npm version](https://img.shields.io/npm/v/@stratametriq/cli.svg?style=flat-square)](https://www.npmjs.com/package/@stratametriq/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
+> **StrataMetriq helps engineering teams understand software architecture, predict the impact of code changes, and prevent risky deployments before they happen.**
+
 **@stratametriq/cli** is the standalone headless DevSecOps and Architecture Governance engine for **StrataMetriq**. It runs offline on your local machine or inside CI/CD pipelines to enforce architectural boundaries, detect production risks, and prevent security regressions before code is merged.
 
 ---
