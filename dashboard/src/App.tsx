@@ -680,6 +680,9 @@ function App() {
       }
     }
 
+    const directFilesSet = new Set<string>();
+    edges.filter((e: any) => e.target === selectedNodeId).forEach((e: any) => directFilesSet.add(e.source));
+
     let riskLevel = 'LOW';
     const totalAffected = affectedFiles.size + affectedApis.size + affectedDb.size + affectedComponents.size;
     if (totalAffected > 20) riskLevel = 'HIGH';
@@ -688,6 +691,7 @@ function App() {
     return {
       files: affectedFiles.size,
       fileList: Array.from(affectedFiles),
+      directFilesSet,
       apis: affectedApis.size,
       apiList: Array.from(affectedApis),
       dbTables: affectedDb.size,
@@ -1443,8 +1447,71 @@ function App() {
 
           {impactAnalysis && (
             <div className="panel-section risk-impact-section">
-              <h3 style={{ color: '#f59e0b' }}>Risk Impact Analysis</h3>
-              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem' }}>If I change this file, what else is affected?</p>
+              <h3 style={{ color: '#f59e0b', marginBottom: '0.2rem' }}>Risk Impact Analysis</h3>
+              <p style={{ fontSize: '0.82rem', color: '#94a3b8', marginBottom: '0.8rem' }}>If I change this file, what else is affected and why?</p>
+
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.95)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                borderRadius: '8px',
+                padding: '10px 12px',
+                marginBottom: '1rem',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24', fontWeight: 'bold', fontSize: '0.83rem', marginBottom: '8px', borderBottom: '1px solid rgba(245, 158, 11, 0.25)', paddingBottom: '6px' }}>
+                  <span>💡 Why & How Are These Affected?</span>
+                </div>
+
+                {impactAnalysis.files > 0 && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <div style={{ fontSize: '0.77rem', fontWeight: 700, color: '#38bdf8' }}>
+                      🔗 Dependency Ripple ({impactAnalysis.files} files: {impactAnalysis.directFilesSet?.size || 0} direct, {Math.max(0, impactAnalysis.files - (impactAnalysis.directFilesSet?.size || 0))} transitive)
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#cbd5e1', lineHeight: '1.4', marginTop: '2px' }}>
+                      These files directly import or depend transitively on <code style={{ color: '#fbbf24' }}>{getFileName(selectedNodeData?.filePath || selectedNodeData?.name || selectedNodeId || '')}</code>. Modifying existing exported functions, signatures, or shared state here can trigger compilation errors or runtime failures in downstream importers.
+                    </div>
+                  </div>
+                )}
+
+                {impactAnalysis.apis > 0 && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <div style={{ fontSize: '0.77rem', fontWeight: 700, color: '#c084fc' }}>
+                      ⚡ API Contract Risk ({impactAnalysis.apis} endpoints)
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#cbd5e1', lineHeight: '1.4', marginTop: '2px' }}>
+                      This file participates in the server request lifecycle of these API endpoints. Modifying payload schemas, query parameters, or response contracts directly affects frontend or external API consumers.
+                    </div>
+                  </div>
+                )}
+
+                {impactAnalysis.components > 0 && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <div style={{ fontSize: '0.77rem', fontWeight: 700, color: '#34d399' }}>
+                      🎨 UI Component Tree ({impactAnalysis.components} views)
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#cbd5e1', lineHeight: '1.4', marginTop: '2px' }}>
+                      These React/UI components render or invoke logic from this module. Changing hooks or state properties will trigger re-renders or behavioral shifts.
+                    </div>
+                  </div>
+                )}
+
+                <div style={{
+                  background: 'rgba(56, 189, 248, 0.12)',
+                  border: '1px dashed rgba(56, 189, 248, 0.4)',
+                  borderRadius: '6px',
+                  padding: '7px 9px',
+                  marginTop: '8px',
+                  fontSize: '0.72rem',
+                  color: '#e2e8f0',
+                  lineHeight: '1.4'
+                }}>
+                  <strong style={{ color: '#38bdf8' }}>➕ Adding vs. Modifying Code:</strong>
+                  <br />
+                  • <strong>Adding new endpoints or exports:</strong> <span style={{ color: '#34d399', fontWeight: 600 }}>Non-breaking (0 ripple risk).</span> Existing consumers remain unaffected until they explicitly import the new code.
+                  <br />
+                  • <strong>Modifying existing exports:</strong> <span style={{ color: '#f87171', fontWeight: 600 }}>High ripple risk.</span> Propagates across all dependent files below.
+                </div>
+              </div>
 
               <div style={{ marginBottom: '0.8rem' }}>
                 <div className="metric-row" style={{ marginBottom: '0.3rem' }}>
@@ -1452,12 +1519,29 @@ function App() {
                   <span className="metric-value" style={{ color: impactAnalysis.files > 0 ? '#f59e0b' : '#94a3b8' }}>{impactAnalysis.files}</span>
                 </div>
                 {impactAnalysis.fileList && impactAnalysis.fileList.length > 0 && (
-                  <div style={{ maxHeight: '120px', overflowY: 'auto', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px', borderLeft: '2px solid #f59e0b' }}>
-                    {impactAnalysis.fileList.map((file: string, idx: number) => (
-                      <div key={idx} onClick={() => handleOpenFile(file)} style={{ fontSize: '0.78rem', color: '#38bdf8', cursor: 'pointer', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={`Click to open ${file}`}>
-                        📄 {getFileName(file)} <span style={{ fontSize: '0.68rem', color: '#64748b' }}>({getFolderPath(file)})</span>
-                      </div>
-                    ))}
+                  <div style={{ maxHeight: '140px', overflowY: 'auto', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px', borderLeft: '2px solid #f59e0b' }}>
+                    {impactAnalysis.fileList.map((file: string, idx: number) => {
+                      const isDirect = impactAnalysis.directFilesSet && impactAnalysis.directFilesSet.has(file);
+                      return (
+                        <div key={idx} onClick={() => handleOpenFile(file)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', color: '#38bdf8', cursor: 'pointer', marginBottom: '5px' }} title={`Click to open ${file}`}>
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            📄 {getFileName(file)} <span style={{ fontSize: '0.68rem', color: '#64748b' }}>({getFolderPath(file)})</span>
+                          </span>
+                          <span style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            padding: '1px 5px',
+                            borderRadius: '3px',
+                            background: isDirect ? 'rgba(249, 115, 22, 0.2)' : 'rgba(100, 116, 139, 0.25)',
+                            color: isDirect ? '#fb923c' : '#94a3b8',
+                            flexShrink: 0,
+                            marginLeft: '6px'
+                          }}>
+                            {isDirect ? 'Direct Importer' : 'Transitive'}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
