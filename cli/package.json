@@ -2,6 +2,18 @@
   "name": "@stratametriq/cli",
   "version": "1.4.3",
   "description": "Headless CLI and CI/CD DevSecOps Governance Gate for StrataMetriq",
+  "license": "MIT",
+  "keywords": [
+    "stratametriq",
+    "architecture",
+    "devsecops",
+    "governance",
+    "ast",
+    "scanner",
+    "security",
+    "sarif",
+    "ci-cd"
+  ],
   "bin": {
     "stratametriq": "dist/index.js"
   },

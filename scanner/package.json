@@ -1,6 +1,15 @@
 {
   "name": "@stratametriq/scanner",
   "version": "1.4.3",
+  "description": "Polyglot AST Analysis & Pre-Deployment Safety Engine for StrataMetriq",
+  "license": "MIT",
+  "keywords": [
+    "stratametriq",
+    "scanner",
+    "ast",
+    "parser",
+    "polyglot"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
