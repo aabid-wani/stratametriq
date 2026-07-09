@@ -1,6 +1,6 @@
 {
   "name": "@stratametriq/scanner",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -8,9 +8,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@stratametriq/shared": "*"
-  },
-  "devDependencies": {
+    "@stratametriq/shared": "*",
     "typescript": "^5.3.3"
   }
 }
