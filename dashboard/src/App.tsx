@@ -768,52 +768,35 @@ function App() {
         </span>
       </div>
 
-      <div className="global-filter-toolbar glass-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.9rem 1.4rem', marginBottom: '1.8rem', borderLeft: '4px solid #38bdf8' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '290px' }}>
-          <span style={{ fontSize: '1.15rem' }}>🔍</span>
+      <div className="global-filter-toolbar">
+        <div className="search-input-pill-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#71717a', flexShrink: 0 }}>
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
           <input
             type="text"
-            placeholder="Search workspace modules, API routes, or DB tables..."
+            className="search-input-pill-field"
+            placeholder="Search modules, API routes, or DB tables..."
             value={globalSearchQuery}
             onChange={(e) => setGlobalSearchQuery(e.target.value)}
-            style={{
-              flex: 1,
-              padding: '0.65rem 1rem',
-              borderRadius: '10px',
-              border: '1px solid rgba(56, 189, 248, 0.35)',
-              background: 'rgba(15, 23, 42, 0.85)',
-              color: '#f8fafc',
-              fontSize: '0.9rem',
-              outline: 'none',
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
-            }}
           />
           {globalSearchQuery && (
-            <button onClick={() => setGlobalSearchQuery('')} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.15rem' }}>✕</button>
+            <button onClick={() => setGlobalSearchQuery('')} className="search-clear-btn" title="Clear search">✕</button>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.82rem', color: '#94a3b8', marginRight: '4px', fontWeight: 600 }}>Quick Filter:</span>
+
+        <div className="quick-filter-pills-row">
           {[
-            { id: 'all', label: `All Modules (${nodes.length})` },
-            { id: 'highRisks', label: `⚠️ High Risks (${nodes.filter((n: any) => (n.productionRisks || []).some((r: any) => r.severity === 'HIGH')).length})` },
-            { id: 'openFiles', label: `📂 Open Tabs (${nodes.filter((n: any) => isFileOpen(n.filePath)).length})` },
-            { id: 'circular', label: `🔄 Circular Loops (${cycles.length})` }
+            { id: 'all', label: `All ${nodes.length}` },
+            { id: 'highRisks', label: `⚠️ ${nodes.filter((n: any) => (n.productionRisks || []).some((r: any) => r.severity === 'HIGH')).length}` },
+            { id: 'openFiles', label: `📂 ${nodes.filter((n: any) => isFileOpen(n.filePath)).length}` },
+            { id: 'circular', label: `🔄 ${cycles.length}` }
           ].map(f => (
             <button
               key={f.id}
               onClick={() => setQuickFilter(f.id)}
-              style={{
-                background: quickFilter === f.id ? 'rgba(56, 189, 248, 0.28)' : 'rgba(255, 255, 255, 0.05)',
-                color: quickFilter === f.id ? '#38bdf8' : '#94a3b8',
-                border: quickFilter === f.id ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.08)',
-                padding: '6px 15px',
-                borderRadius: '18px',
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                fontWeight: quickFilter === f.id ? '700' : '500',
-                transition: 'all 0.25s ease'
-              }}
+              className={`quick-filter-pill-btn ${quickFilter === f.id ? 'active' : ''}`}
             >
               {f.label}
             </button>
