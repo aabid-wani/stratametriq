@@ -1083,46 +1083,50 @@ function App() {
           ) : (
             <ul className="fragile-list">
               {duplicates.map((dup: any, idx: number) => (
-                <li key={idx} style={{ flexDirection: 'column', alignItems: 'flex-start', borderLeftColor: '#8b5cf6', padding: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '8px', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="file-name clickable" onClick={() => handleOpenItemWithLine(dup.fileA, undefined, dup.lineA || 1)} title={dup.fileA} style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                <li key={idx} style={{ flexDirection: 'column', alignItems: 'flex-start', borderLeft: '4px solid #8b5cf6', padding: '14px 16px', background: 'rgba(30, 41, 59, 0.4)', borderRadius: '10px', marginBottom: '10px', width: '100%', boxSizing: 'border-box' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', width: '100%', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 230px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', minWidth: 0 }}>
+                        <span className="file-name clickable" onClick={() => handleOpenItemWithLine(dup.fileA, undefined, dup.lineA || 1)} title={dup.fileA} style={{ fontWeight: 700, fontSize: '0.88rem', color: '#f8fafc', wordBreak: 'break-all' }}>
                           {getFileName(dup.fileA)}
                         </span>
                         {dup.lineA && (
-                          <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(dup.fileA, undefined, dup.lineA); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer', padding: '1px 6px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }} title={`Click to jump directly to Line ${dup.lineA} in editor`}>
+                          <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(dup.fileA, undefined, dup.lineA); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.73rem', textDecoration: 'underline', cursor: 'pointer', padding: '2px 8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', flexShrink: 0 }} title={`Click to jump directly to Line ${dup.lineA} in editor`}>
                             [Line {dup.lineA}]
                           </span>
                         )}
-                        {renderOpenBadge(isFileOpen(dup.fileA))}
+                        <span style={{ flexShrink: 0 }}>
+                          {renderOpenBadge(isFileOpen(dup.fileA))}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="file-name clickable" onClick={() => handleOpenItemWithLine(dup.fileB, undefined, dup.lineB || 1)} title={dup.fileB} style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', minWidth: 0 }}>
+                        <span className="file-name clickable" onClick={() => handleOpenItemWithLine(dup.fileB, undefined, dup.lineB || 1)} title={dup.fileB} style={{ fontWeight: 700, fontSize: '0.88rem', color: '#f8fafc', wordBreak: 'break-all' }}>
                           {getFileName(dup.fileB)}
                         </span>
                         {dup.lineB && (
-                          <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(dup.fileB, undefined, dup.lineB); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.7rem', textDecoration: 'underline', cursor: 'pointer', padding: '1px 6px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '3px' }} title={`Click to jump directly to Line ${dup.lineB} in editor`}>
+                          <span onClick={(e) => { e.stopPropagation(); handleOpenItemWithLine(dup.fileB, undefined, dup.lineB); }} style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.73rem', textDecoration: 'underline', cursor: 'pointer', padding: '2px 8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', flexShrink: 0 }} title={`Click to jump directly to Line ${dup.lineB} in editor`}>
                             [Line {dup.lineB}]
                           </span>
                         )}
-                        {renderOpenBadge(isFileOpen(dup.fileB))}
+                        <span style={{ flexShrink: 0 }}>
+                          {renderOpenBadge(isFileOpen(dup.fileB))}
+                        </span>
                       </div>
                     </div>
-                    <div className="file-edges" style={{ background: 'rgba(139, 92, 246, 0.2)', color: '#c4b5fd', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                      <span>{dup.funcSimilarity !== undefined ? `${dup.funcSimilarity}% Logic Match` : `${dup.similarity}% match`}</span>
+                    <div className="file-edges" style={{ background: 'rgba(139, 92, 246, 0.25)', border: '1px solid rgba(139, 92, 246, 0.4)', color: '#e9d5ff', padding: '6px 12px', borderRadius: '10px', fontWeight: 700, fontSize: '0.82rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+                      <span style={{ whiteSpace: 'nowrap' }}>{dup.funcSimilarity !== undefined ? `${dup.funcSimilarity}% Logic Match` : `${dup.similarity}% match`}</span>
                       {dup.funcSimilarity !== undefined && dup.similarity !== undefined && dup.similarity !== dup.funcSimilarity && (
-                        <span style={{ fontSize: '0.68rem', color: '#a78bfa', fontWeight: 'normal' }}>({dup.similarity}% total file overlap)</span>
+                        <span style={{ fontSize: '0.7rem', color: '#c4b5fd', fontWeight: 500, whiteSpace: 'nowrap' }}>({dup.similarity}% total file overlap)</span>
                       )}
                     </div>
                   </div>
                   {dup.fragment && (
-                    <div style={{ fontSize: '0.78rem', color: '#f3e8ff', background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.35)', padding: '6px 10px', borderRadius: '4px', margin: '6px 0', fontFamily: 'monospace', width: '100%', boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ color: '#c4b5fd', fontWeight: 'bold' }}>⚡</span>
+                    <div style={{ fontSize: '0.78rem', color: '#f3e8ff', background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.35)', padding: '8px 12px', borderRadius: '6px', margin: '6px 0', fontFamily: 'monospace', width: '100%', boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-word' }}>
+                      <span style={{ color: '#c4b5fd', fontWeight: 'bold', flexShrink: 0 }}>⚡</span>
                       <span>{dup.fragment}</span>
                     </div>
                   )}
-                  <div className="problem-messages" style={{ fontSize: '0.8rem', color: '#34d399', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div className="problem-messages" style={{ fontSize: '0.8rem', color: '#34d399', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     ✔ Suggest creating a shared helper for duplicate logic
                   </div>
                 </li>
