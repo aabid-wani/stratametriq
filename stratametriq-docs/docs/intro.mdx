@@ -57,6 +57,28 @@ rules:
 
 ---
 
+## 🔬 Most Complex Modules & Risk Impact Analysis
+
+### 1. 🧩 Most Complex Modules Analysis
+StrataMetriq automatically computes cyclomatic complexity and AST token density across every source file in your repository:
+* **Complexity Scoring**: Ranks modules based on branching density, nested conditional logic, and total AST nodes.
+* **Dashboard Complex Modules Card**: Displays the top most complex files in your codebase with clear metric bars so engineering managers and tech leads can prioritize refactoring technical debt.
+* **1-Click Graph Isolation**: Clicking any complex module instantly focuses the visual dependency graph on that file and highlights its upstream/downstream connections.
+
+### 2. ⚡ Intelligent Risk Impact Analysis & Ripple Mechanics
+When inspecting any module in the StrataMetriq dashboard, the **Risk Impact Analysis** panel answers *"If I change this file, what else is affected and why?"*:
+* **💡 "Why & How Are These Affected?" Explanation Card**:
+  * **Dependency Ripple Chain**: Shows exact counts for **Direct Importers** (`[Direct Importer]` badge) versus **Transitive Dependents** (`[Transitive]` badge).
+  * **API Contract Risk**: Explains which server API routes rely on the file and warn against breaking response payload contracts.
+  * **UI Component Tree**: Lists affected React/UI components that will undergo re-renders or layout changes.
+* **➕ Adding vs. Modifying Code Mechanics**:
+  * **Adding New Code / Endpoints**: Non-breaking (`0 ripple risk`). New functions or routes do not affect existing consumers until explicitly imported.
+  * **Modifying Existing Exports**: High ripple risk across all listed dependents.
+* **🎨 Native VS Code Editor Left-Gutter Decorations**:
+  * Duplicate logic blocks and high-risk modules are automatically decorated with a **solid purple/cyan left gutter strip** and inline hover diagnostics directly inside your active VS Code editor window.
+
+---
+
 ## 🚀 Key Highlights
 
 | Feature | Description | Benefit |

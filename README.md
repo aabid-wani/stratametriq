@@ -44,12 +44,15 @@ Click any API endpoint in your project (e.g., `GET /role/:name`, `GETVENDOR /ven
   9. **HTTP Response**: JSON payload serialization (`200 OK`).
   10. **React UI Update**: DOM mutation and state re-rendering.
 
-### 3. ⚡ Risk Impact Analysis ("What breaks if I touch this file?")
-When you click any file in the dashboard, StrataMetriq calculates its downstream ripple effect and assigns a concrete **Risk Level (`HIGH`, `MEDIUM`, `LOW`)**.
-* Categorizes exact dependencies that rely on this file:
-  * **API Endpoints Affected**: Routes that will fail if the logic breaks.
-  * **Database Tables Coupled**: Schemas tied to this module.
-  * **Downstream Components**: Frontend UI views depending on this service.
+### 3. 🔬 Most Complex Modules & Intelligent Risk Impact Analysis ("What breaks if I touch this file?")
+StrataMetriq automatically evaluates code complexity and calculates downstream ripple effects across every module:
+* **🧩 Most Complex Modules Ranking**: Ranks source files based on cyclomatic complexity, nested conditional depth, and AST token density so engineering leaders can target high-risk technical debt.
+* **💡 "Why & How Are These Affected?" Explanation Guide**:
+  * **Direct Importers vs. Transitive Dependents**: Distinguishes files that directly import your module (`[Direct Importer]` badge) from downstream files further away in the ripple chain (`[Transitive]` badge).
+  * **API Contract Risk**: Identifies backend endpoints coupled to the file and warns against breaking response schemas.
+  * **UI Component Tree**: Shows React/UI views that will re-render when hooks or state change.
+* **➕ Adding vs. Modifying Code Rule**: Adding new endpoints or functions carries **0 ripple risk** (non-breaking), whereas modifying existing signatures carries high ripple risk across all dependents.
+* **🎨 Native VS Code Editor Left-Gutter Decorations**: Duplicate logic blocks are decorated with a **solid purple/cyan left gutter strip** and inline hover diagnostics directly in your VS Code editor.
 
 ### 4. 🌳 Interactive Dependency Explorer & Multi-Layer Tree
 Provides an interactive, hierarchical tree graph (`Root Module ➔ Controller ➔ Service ➔ Database Table`).
