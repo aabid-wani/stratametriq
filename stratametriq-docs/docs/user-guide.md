@@ -524,21 +524,40 @@ When StrataMetriq scans a medium-sized full-stack repository, it computes concre
 * **`4.33` Complexity Index:** Means each module imports an average of ~4.3 dependencies—a healthy ratio indicating well-decoupled, modular components (indices > 10 warn of monolithic "god files").
 * **`609` Files Mapped & `2639` Imports Found:** Shows the exact scale of the AST structural dependency graph constructed by the scanner.
 
-**📐 How the Health Score is Calculated (Exact Mathematical Formula):**
+**📐 How the Health Score is Calculated (Exact Mathematical Formulas):**
 StrataMetriq calculates architectural health using transparent, deterministic formulas evaluated directly from your AST dependency graph:
 
-1. **Workspace Project Health Formula (Top Dashboard Gauge):**
-   First, StrataMetriq calculates the repository's **Complexity Index** (the average number of imports per file):
+1. **Enterprise Project Health Formula (Monorepo & CI/CD Level):**
+   StrataMetriq calculates project health using **density-scaled penalties** (dividing issues by `Total Modules`) so that large enterprise repositories are evaluated fairly:
    ```text
-   Complexity Index = Total Imports (Edges) ÷ Total Files Mapped (Nodes)
+   Project Health Score = MAX( 10% , MIN( 100% , 100 - (1.5 × C) - (40 × D_high) - (15 × D_medium) - (100 × D_circular) ) )
    ```
-   Then, it maps this complexity directly into an overall percentage score bounded between **10%** and **100%**:
-   ```text
-   Project Health Score = MAX( 10% , MIN( 100% , 100 - (Complexity Index × 2) ) )
-   ```
-   *(Example: With `2639` imports across `609` files, the complexity index is `2639 ÷ 609 = 4.33`. The score is `100 - (4.33 × 2) = 91.34%` → **`91%`**!)*
+   Where:
+   * **`C` (Complexity Index)** = Average imports and structural complexity across files (`Total Edges ÷ Total Files`).
+   * **`D_high` (High-Risk Density)** = `High Risk Modules ÷ Total Modules` (central coupling hubs).
+   * **`D_medium` (Medium-Risk Density)** = `Medium Risk Modules ÷ Total Modules`.
+   * **`D_circular` (Circular Dependency Density)** = `Circular Loops ÷ Total Modules` (circular imports `A -> B -> A`).
 
-2. **Individual Module Health Formula (Inspection Drawer & File Cards):**
+2. **💡 Step-by-Step Numerical Example (100-File Codebase):**
+   Suppose we scan a project with **100 files (`Total Modules = 100`)** that has:
+   * **Average Complexity Index (`C`)**: `10`
+   * **High-Risk Modules**: `5 files` (`D_high = 5 ÷ 100 = 0.05`)
+   * **Medium-Risk Modules**: `10 files` (`D_medium = 10 ÷ 100 = 0.10`)
+   * **Circular Dependency Loops**: `2 loops` (`D_circular = 2 ÷ 100 = 0.02`)
+
+   **Let's calculate each penalty:**
+   * Complexity Penalty: `1.5 × 10 = 15 points`
+   * High-Risk Hotspot Penalty: `40 × 0.05 = 2 points`
+   * Medium-Risk Penalty: `15 × 0.10 = 1.5 points`
+   * Circular Loop Penalty: `100 × 0.02 = 2 points`
+
+   **Final Calculation:**
+   ```text
+   Health Score = 100 - 15 - 2 - 1.5 - 2 = 79.5% → 80% (Grade: B/C 🟡 - Needs Refactoring)
+   ```
+   *(Notice: Breaking the 2 circular dependency loops removes the 2-point circular penalty, instantly raising the project health to **82%**!)*
+
+3. **Individual Module Health Formula (Inspection Drawer & File Cards):**
    When inspecting an individual file, StrataMetriq evaluates its granular internal AST structure:
    ```text
    Module Complexity Score = MIN( 100 , Functions + (2 × Outgoing Imports) + (1.5 × Components Used) + (3 × API Calls) )
@@ -546,14 +565,6 @@ StrataMetriq calculates architectural health using transparent, deterministic fo
    Module Health Score = MAX( 10% , MIN( 100% , 100 - (10 × Syntax/Lint Errors) - (0.5 × Module Complexity Score) ) )
    ```
    *(Note: Each syntax error or unresolved lint problem reduces a file's health by **10%**, while excessive API calls and outgoing dependencies gradually weigh down the score to encourage decoupling).*
-
-**🧠 Why We Use `MIN = 100%`, `MAX = 10%`, and `Complexity × 2` (Design Rationale):**
-* **Why `MIN(100%, ...)`? (The Upper Bound):** You cannot have more than 100% health! In smaller repositories with very few dependencies, this cap prevents the percentage from accidentally overflowing past perfection (e.g., stopping 102% or 105%).
-* **Why `MAX(10%, ...)`? (The Floor Bound):** Even the most tangled, legacy spaghetti codebase should never show `0%` or a negative health score (like `-15%`). Setting a solid floor at **10%** ensures the UI always renders a visible gauge and signals that the codebase is still functional and recoverable—just heavily in need of decoupling!
-* **Why `Complexity × 2`? (The Coupling Penalty Multiplier):** In software architecture, every dependency a module imports adds exponential cognitive load and coupling risk.
-  * Multiplying by **2** acts as a calibrated *Coupling Penalty Weight*—meaning each average import costs **2 percentage points** of overall project health.
-  * At an average of 10 imports per file (`10 × 2 = 20` penalty → **80% health**), developers receive a mild structural warning.
-  * At an average of 25 imports per file (`25 × 2 = 50` penalty → **50% health**), the system correctly alerts teams to tight coupling and monolithic "god files" that urgently need refactoring!
 
 **📸 Interactive Dashboard Preview:**
 Notice how these gauges give you an immediate high-level summary before diving into granular file inspections:
