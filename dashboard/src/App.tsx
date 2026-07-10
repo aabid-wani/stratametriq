@@ -708,10 +708,28 @@ function App() {
 
       <header className="hero-compact-bar">
         <div className="hero-compact-left">
-          <div className="hero-logo-box">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              <path d="m9 12 2 2 4-4" />
+          <div className="hero-logo-box" title="StrataMetriq Monogram Logo">
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="logoSGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#38bdf8" />
+                  <stop offset="50%" stopColor="#2dd4bf" />
+                  <stop offset="100%" stopColor="#818cf8" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M31.5 13.5C31.5 10.5 28.5 8 24 8C19.5 8 15.5 11 15.5 15.5C15.5 20.5 20 22.5 25.5 24C31 25.5 33.5 28.5 33.5 33C33.5 38 29.5 40.5 24 40.5C18.5 40.5 15 37.5 14.5 34.5"
+                stroke="url(#logoSGrad)"
+                strokeWidth="4.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M18 19C21 20 26 21.5 29 23M20 26.5C23.5 27.8 28 29.5 30 31.5"
+                stroke="#38bdf8"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                opacity="0.6"
+              />
             </svg>
           </div>
           <div className="hero-compact-text">
@@ -720,7 +738,7 @@ function App() {
               <span className="hero-compact-version">v1.4.4</span>
             </div>
             <div className="hero-compact-subtitle">
-              DevSecOps governance · pre-deployment safety gate
+              Architecture Intelligence & Pre-Deployment Safety in VS Code
             </div>
           </div>
         </div>
