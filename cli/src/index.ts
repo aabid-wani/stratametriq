@@ -604,6 +604,7 @@ async function main() {
   let diffRef: string | null = null;
   let isPrune = false;
   let isWatch = false;
+  let isGovernance = false;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
@@ -616,6 +617,8 @@ async function main() {
       if (args[i + 1] && !args[i + 1]!.startsWith('-')) {
         impactFile = args[++i]!;
       }
+    } else if (arg === '--governance' || arg === '--rules') {
+      isGovernance = true;
     } else if (arg === '--fail-on-high') {
       failOnHigh = true;
     } else if (arg === '--fail-on-circular') {
@@ -645,7 +648,8 @@ async function main() {
 
   if (command === 'init') {
     const rcPath = path.resolve(process.cwd(), '.stratametriqrc.json');
-    const ymlPath = path.resolve(process.cwd(), 'stratametriq.config.yml');
+    const ymlPath = path.resolve(process.cwd(), 'stratametriq.rules.yml');
+
     if (!fs.existsSync(rcPath)) {
       const defaultRc = {
         "ignoreDirs": ["node_modules", ".git", "dist", "build", "coverage", ".cache"],
@@ -659,13 +663,19 @@ async function main() {
           "jsonOut": null,
           "mdOut": null,
           "htmlOut": null
+        },
+        "aiOptions": {
+          "enabled": false,
+          "provider": "gemini"
         }
       };
       fs.writeFileSync(rcPath, JSON.stringify(defaultRc, null, 2), 'utf8');
     }
 
-    if (!fs.existsSync(ymlPath)) {
-      const defaultYml = `# StrataMetriq Enterprise Custom Architecture Governance Rules
+    let createdYml = false;
+    if (isGovernance) {
+      if (!fs.existsSync(ymlPath)) {
+        const defaultYml = `# StrataMetriq Enterprise Custom Architecture Governance & Boundary Rules
 version: 1
 rules:
   - name: "UI layer cannot import Database layer directly"
@@ -680,14 +690,20 @@ rules:
     severity: "HIGH"
     message: "Domain layer must remain decoupled from infrastructure details."
 `;
-      fs.writeFileSync(ymlPath, defaultYml, 'utf8');
+        fs.writeFileSync(ymlPath, defaultYml, 'utf8');
+        createdYml = true;
+      }
     }
 
     console.log(`${colors.bold}${colors.cyan}================================================================${colors.reset}`);
-    console.log(`${colors.bold}${colors.cyan}  StrataMetriq CLI v1.4.1 - Enterprise Governance Wizard        ${colors.reset}`);
+    console.log(`${colors.bold}${colors.cyan}  StrataMetriq CLI v1.4.4 - Enterprise Configuration Wizard     ${colors.reset}`);
     console.log(`${colors.bold}${colors.cyan}================================================================${colors.reset}\n`);
-    console.log(`${colors.green}[+] Created configuration files:\n    - ${rcPath}\n    - ${ymlPath}${colors.reset}`);
-    console.log(`${colors.gray}You can customize architecture boundary rules in stratametriq.config.yml.${colors.reset}\n`);
+    console.log(`${colors.green}[+] Created configuration file(s):\n    - ${rcPath}${createdYml ? `\n    - ${ymlPath}` : ''}${colors.reset}\n`);
+    if (!createdYml) {
+      console.log(`${colors.gray}Tip: To also generate custom architectural governance rules (stratametriq.rules.yml), run:\n     npx @stratametriq/cli init --governance${colors.reset}\n`);
+    } else {
+      console.log(`${colors.gray}You can customize architecture boundary rules in stratametriq.rules.yml.${colors.reset}\n`);
+    }
     process.exit(0);
   }
 

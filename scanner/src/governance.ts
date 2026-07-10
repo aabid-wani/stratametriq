@@ -65,6 +65,8 @@ export function parseGovernanceConfig(content: string): CustomArchitectureRule[]
 
 export function loadGovernanceRules(workspaceRoot: string): CustomArchitectureRule[] {
   const possibleConfigs = [
+    path.join(workspaceRoot, 'stratametriq.rules.yml'),
+    path.join(workspaceRoot, 'stratametriq.rules.yaml'),
     path.join(workspaceRoot, 'stratametriq.config.yml'),
     path.join(workspaceRoot, 'stratametriq.config.yaml'),
     path.join(workspaceRoot, 'stratametriq.config.json')

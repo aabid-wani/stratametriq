@@ -39,10 +39,14 @@ Calculate exact downstream dependencies across APIs, database tables, and UI com
 npx @stratametriq/cli impact src/services/UserService.ts
 ```
 
-### 4. Enterprise Architecture Governance Wizard (`init`)
-Generate `.stratametriqrc.json` and a starter `stratametriq.config.yml` architecture boundary configuration file:
+### 4. Enterprise Architecture Configuration Wizard (`init`)
+Generate a clean `.stratametriqrc.json` execution configuration file:
 ```bash
 npx @stratametriq/cli init
+```
+To also generate custom architecture boundary & governance rules (`stratametriq.rules.yml`), pass `--governance`:
+```bash
+npx @stratametriq/cli init --governance
 ```
 
 ### 5. Export Security & Compliance Reports
@@ -60,9 +64,9 @@ npx @stratametriq/cli scan . --json architecture.json
 
 ---
 
-## 🏛️ Enterprise Custom Architecture Governance (`stratametriq.config.yml`)
+## 🏛️ Enterprise Custom Architecture Governance (`stratametriq.rules.yml`)
 
-Enforce organizational architecture standards across your monorepo or layered application. Define forbidden import boundaries in `stratametriq.config.yml`:
+Enforce organizational architecture standards across your monorepo or layered application. Define forbidden import boundaries in `stratametriq.rules.yml`:
 
 ```yaml
 version: 1
