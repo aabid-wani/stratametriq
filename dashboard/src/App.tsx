@@ -1122,52 +1122,6 @@ function App() {
                       <span>{dup.fragment}</span>
                     </div>
                   )}
-                  {(dup.codeSnippetA || dup.codeSnippetB) && (
-                    <div style={{
-                      margin: '6px 0',
-                      background: 'rgba(15, 23, 42, 0.95)',
-                      border: '1px solid rgba(168, 85, 247, 0.45)',
-                      borderRadius: '6px',
-                      overflow: 'hidden',
-                      width: '100%',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-                    }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        background: 'rgba(139, 92, 246, 0.22)',
-                        padding: '5px 10px',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        color: '#e9d5ff',
-                        borderBottom: '1px solid rgba(139, 92, 246, 0.3)'
-                      }}>
-                        <span>🔍 Highlighted Code Snippet (Lines {dup.lineA || 1}–{(dup.lineA || 1) + 5})</span>
-                        <span style={{
-                          background: 'rgba(168, 85, 247, 0.25)',
-                          color: '#f3e8ff',
-                          padding: '1px 6px',
-                          borderRadius: '4px',
-                          fontSize: '0.67rem'
-                        }}>
-                          Duplicate Logic Block
-                        </span>
-                      </div>
-                      <pre style={{
-                        margin: 0,
-                        padding: '8px 12px',
-                        fontSize: '0.74rem',
-                        fontFamily: "'Fira Code', 'Consolas', monospace",
-                        color: '#38bdf8',
-                        overflowX: 'auto',
-                        lineHeight: '1.45',
-                        whiteSpace: 'pre-wrap'
-                      }}>
-                        {dup.codeSnippetA || dup.codeSnippetB}
-                      </pre>
-                    </div>
-                  )}
                   <div className="problem-messages" style={{ fontSize: '0.8rem', color: '#34d399', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     ✔ Suggest creating a shared helper for duplicate logic
                   </div>
