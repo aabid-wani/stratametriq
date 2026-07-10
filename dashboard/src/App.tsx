@@ -1165,6 +1165,137 @@ function App() {
           )}
         </div>
 
+        <div className="api-flow-list glass-card" style={{ gridColumn: '1 / -1', width: '100%', marginTop: '0.5rem', boxSizing: 'border-box' }}>
+          <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>API Flow Visualizer (Module-Wise)</span>
+            </span>
+            <span style={{ fontSize: '0.75rem', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold', letterSpacing: '0.3px' }}>
+              INTERACTIVE & FULL SCREEN
+            </span>
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: '#94a3b8', marginBottom: '1rem' }}>
+            APIs grouped by module/model. Use search to filter by module name or endpoint:
+          </p>
+
+          <div style={{ marginBottom: '1.4rem' }}>
+            <div className="search-input-pill-box" style={{ width: '100%' }}>
+              <span style={{ fontSize: '1rem', color: '#38bdf8' }}>🔍</span>
+              <input
+                type="text"
+                placeholder="Search module or API route (e.g., vendor, assignment, create)..."
+                value={apiSearchQuery}
+                onChange={(e) => setApiSearchQuery(e.target.value)}
+                className="search-input-pill-field"
+                style={{ width: '100%' }}
+              />
+              {apiSearchQuery && (
+                <button
+                  onClick={() => setApiSearchQuery('')}
+                  className="search-clear-btn"
+                  title="Clear API search"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="module-groups-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', maxHeight: '650px', overflowY: 'auto', paddingRight: '6px' }}>
+            {Object.entries(groupedApis).filter(([moduleName, apis]) => {
+              if (!apiSearchQuery.trim()) return true;
+              const q = apiSearchQuery.toLowerCase();
+              return moduleName.toLowerCase().includes(q) || apis.some(a => a.toLowerCase().includes(q));
+            }).map(([moduleName, apis], modIdx) => {
+              const q = apiSearchQuery.toLowerCase();
+              const filteredApis = (!apiSearchQuery.trim() || moduleName.toLowerCase().includes(q)) ? apis : apis.filter(a => a.toLowerCase().includes(q));
+              if (filteredApis.length === 0) return null;
+              return (
+                <div key={modIdx} className="module-group-card" style={{ background: 'rgba(15, 23, 42, 0.75)', borderRadius: '14px', border: '1px solid rgba(56, 189, 248, 0.22)', overflow: 'hidden', flexShrink: 0, boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)' }}>
+                  <div className="module-header" style={{ background: 'linear-gradient(90deg, rgba(56, 189, 248, 0.18) 0%, rgba(30, 41, 59, 0.4) 100%)', padding: '0.85rem 1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                    <span style={{ fontWeight: 700, color: '#38bdf8', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.6px' }}>
+                      📂 {moduleName.toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', background: 'rgba(15, 23, 42, 0.85)', color: '#94a3b8', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '3px 12px', borderRadius: '12px', fontWeight: 'bold' }}>
+                      {filteredApis.length} {filteredApis.length === 1 ? 'API' : 'APIs'}
+                    </span>
+                  </div>
+                  <ul className="fragile-list" style={{ margin: 0, padding: '0.8rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', maxHeight: 'none', overflowY: 'visible' }}>
+                    {filteredApis.map((api: string, idx: number) => {
+                      const parts = api.trim().split(/\s+/);
+                      const method = parts.length > 1 && ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(parts[0].toUpperCase()) ? parts[0].toUpperCase() : '';
+                      const endpoint = method ? parts.slice(1).join(' ') : api;
+
+                      let methodColor = '#38bdf8';
+                      let methodBg = 'rgba(56, 189, 248, 0.15)';
+                      if (method === 'GET') { methodColor = '#34d399'; methodBg = 'rgba(52, 211, 153, 0.15)'; }
+                      else if (method === 'POST') { methodColor = '#38bdf8'; methodBg = 'rgba(56, 189, 248, 0.15)'; }
+                      else if (method === 'PUT') { methodColor = '#fbbf24'; methodBg = 'rgba(251, 191, 36, 0.15)'; }
+                      else if (method === 'DELETE') { methodColor = '#f87171'; methodBg = 'rgba(248, 113, 113, 0.15)'; }
+
+                      return (
+                        <li
+                          key={idx}
+                          onClick={() => handleSelectApi(api)}
+                          style={{
+                            cursor: 'pointer',
+                            borderLeft: `3px solid ${methodColor}`,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.85rem 1.1rem',
+                            background: 'rgba(30, 41, 59, 0.55)',
+                            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderRadius: '10px',
+                            transition: 'all 0.2s ease',
+                            flexShrink: 0
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                            <span style={{ color: '#fbbf24', fontSize: '0.95rem', flexShrink: 0 }}>⚡</span>
+                            {method && (
+                              <span style={{
+                                fontSize: '0.73rem',
+                                fontWeight: 800,
+                                color: methodColor,
+                                background: methodBg,
+                                padding: '2px 8px',
+                                borderRadius: '6px',
+                                letterSpacing: '0.5px',
+                                flexShrink: 0
+                              }}>
+                                {method}
+                              </span>
+                            )}
+                            <span style={{ fontWeight: 600, color: '#f8fafc', fontFamily: 'monospace', fontSize: '0.92rem', wordBreak: 'break-all' }}>
+                              {endpoint}
+                            </span>
+                          </div>
+                          <span style={{
+                            fontSize: '0.78rem',
+                            background: 'rgba(56, 189, 248, 0.18)',
+                            color: '#38bdf8',
+                            border: '1px solid rgba(56, 189, 248, 0.35)',
+                            padding: '5px 12px',
+                            borderRadius: '8px',
+                            fontWeight: 700,
+                            whiteSpace: 'nowrap',
+                            marginLeft: '12px'
+                          }}>
+                            Trace Flow →
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="unused-deps-list glass-card" style={{ gridColumn: '1 / -1', width: '100%', marginTop: '0.5rem', boxSizing: 'border-box' }}>
           <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span>Unused / Orphaned Dependencies <span style={{ fontSize: '0.8rem', color: '#fda4af', fontWeight: 'normal' }}>({unusedPackages.length} unused)</span></span>
@@ -1204,66 +1335,6 @@ function App() {
               </table>
             </div>
           )}
-        </div>
-
-        <div className="api-flow-list glass-card" style={{ gridColumn: '1 / -1', width: '100%', marginTop: '0.5rem', boxSizing: 'border-box' }}>
-          <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span>API Flow Visualizer (Module-Wise)</span>
-            <span style={{ fontSize: '0.7rem', color: '#38bdf8', background: 'rgba(56,189,248,0.1)', padding: '2px 8px', borderRadius: '12px' }}>Interactive & Full Screen</span>
-          </h3>
-          <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.8rem' }}>APIs grouped by module/model. Use search to filter by module name or endpoint:</p>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <input
-              type="text"
-              placeholder="🔍 Search module or API (e.g., assignment, discount, upload)..."
-              value={apiSearchQuery}
-              onChange={(e) => setApiSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.65rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(56, 189, 248, 0.3)',
-                background: 'rgba(15, 23, 42, 0.7)',
-                color: '#e0f2fe',
-                fontSize: '0.85rem',
-                outline: 'none',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-              }}
-            />
-          </div>
-
-          <div className="module-groups-container" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '650px', overflowY: 'auto', paddingRight: '6px' }}>
-            {Object.entries(groupedApis).filter(([moduleName, apis]) => {
-              if (!apiSearchQuery.trim()) return true;
-              const q = apiSearchQuery.toLowerCase();
-              return moduleName.toLowerCase().includes(q) || apis.some(a => a.toLowerCase().includes(q));
-            }).map(([moduleName, apis], modIdx) => {
-              const q = apiSearchQuery.toLowerCase();
-              const filteredApis = (!apiSearchQuery.trim() || moduleName.toLowerCase().includes(q)) ? apis : apis.filter(a => a.toLowerCase().includes(q));
-              if (filteredApis.length === 0) return null;
-              return (
-                <div key={modIdx} className="module-group-card" style={{ background: 'rgba(30, 41, 59, 0.4)', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.2)', overflow: 'hidden', flexShrink: 0 }}>
-                  <div className="module-header" style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '0.7rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56, 189, 248, 0.2)' }}>
-                    <span style={{ fontWeight: 700, color: '#38bdf8', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.5px' }}>
-                      📁 {moduleName.toUpperCase()}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', background: 'rgba(0,0,0,0.3)', color: '#94a3b8', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
-                      {filteredApis.length} {filteredApis.length === 1 ? 'API' : 'APIs'}
-                    </span>
-                  </div>
-                  <ul className="fragile-list" style={{ margin: 0, padding: '0.5rem 0.8rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: 'none', overflowY: 'visible' }}>
-                    {filteredApis.map((api: string, idx: number) => (
-                      <li key={idx} onClick={() => handleSelectApi(api)} style={{ cursor: 'pointer', borderLeft: '3px solid #38bdf8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.7rem 1rem', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '6px', transition: 'all 0.2s ease', flexShrink: 0 }}>
-                        <span style={{ fontWeight: 600, color: '#e0f2fe', fontFamily: 'monospace', fontSize: '0.9rem', wordBreak: 'break-all' }}>⚡ {api}</span>
-                        <span style={{ fontSize: '0.75rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold', whiteSpace: 'nowrap', marginLeft: '12px' }}>Trace Flow →</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
 
