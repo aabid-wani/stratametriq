@@ -706,52 +706,67 @@ function App() {
     <div className="dashboard-container">
 
 
-      <header className="hero-header-card">
-        <div className="hero-brand-area">
-          <div className="hero-badge-row">
-            <span className="hero-status-pill">
-              <span className="hero-status-dot" /> ACTIVE MONITORING
-            </span>
-            <span className="hero-version-badge">v1.4.4</span>
-            <span className="hero-version-badge" style={{ background: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.4)', color: '#c084fc' }}>
-              ⚡ AST 360° ENGINE
-            </span>
+      <header className="hero-compact-bar">
+        <div className="hero-compact-left">
+          <div className="hero-logo-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
           </div>
-          <h1 className="hero-title">
-            Strata<span>Metriq</span>
-          </h1>
-          <p className="hero-subtitle">
-            <span>🛡️</span> DevSecOps Architecture Governance & Pre-Deployment Safety Gate
-          </p>
+          <div className="hero-compact-text">
+            <div className="hero-compact-title-row">
+              <span className="hero-compact-title">StrataMetriq</span>
+              <span className="hero-compact-version">v1.4.4</span>
+            </div>
+            <div className="hero-compact-subtitle">
+              DevSecOps governance · pre-deployment safety gate
+            </div>
+          </div>
         </div>
-        <div className="hero-action-area">
-          <div className="hero-buttons-row">
-            <button
-              className="hero-action-button"
-              onClick={handleScan}
-              disabled={scanning}
-            >
-              {scanning ? (
-                <>
-                  <span className="spinner-inline">⚙️</span> Analyzing Workspace...
-                </>
-              ) : (
-                <>
-                  <span>⚡</span> Run Deep Analysis
-                </>
-              )}
-            </button>
-            <button
-              className="hero-action-button hero-secondary-button"
-              onClick={handleExportExecutiveReport}
-              title="Download JSON Executive Architecture Audit Report"
-            >
-              <span>📥</span> Export Audit JSON
-            </button>
-          </div>
-          <span className="hero-meta-note">🔒 Offline AST Engine • 0% Cloud Exfiltration • Real-Time VS Code Sync</span>
+
+        <div className="hero-compact-right">
+          <span className="hero-live-pill">Live</span>
+          <button
+            className="hero-analyze-btn"
+            onClick={handleScan}
+            disabled={scanning}
+          >
+            {scanning ? (
+              <>
+                <span className="spinner-inline">⚙️</span> Analyzing...
+              </>
+            ) : (
+              <>
+                <span>⚡</span> Analyze
+              </>
+            )}
+          </button>
+          <button
+            className="hero-export-icon-btn"
+            onClick={handleExportExecutiveReport}
+            title="Export Audit JSON"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
         </div>
       </header>
+
+      <div className="hero-status-chips-row">
+        <span className="status-chip">
+          <span className="chip-icon">🔒</span> Offline AST
+        </span>
+        <span className="status-chip">
+          <span className="chip-icon">🚫</span> 0% cloud exfil
+        </span>
+        <span className="status-chip">
+          <span className="chip-icon">🔄</span> Real-time sync
+        </span>
+      </div>
 
       <div className="global-filter-toolbar glass-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.9rem 1.4rem', marginBottom: '1.8rem', borderLeft: '4px solid #38bdf8' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '290px' }}>
