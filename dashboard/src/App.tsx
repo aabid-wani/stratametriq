@@ -712,7 +712,10 @@ function App() {
             <span className="hero-status-pill">
               <span className="hero-status-dot" /> ACTIVE MONITORING
             </span>
-            <span className="hero-version-badge">v1.4.1</span>
+            <span className="hero-version-badge">v1.4.4</span>
+            <span className="hero-version-badge" style={{ background: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.4)', color: '#c084fc' }}>
+              ⚡ AST 360° ENGINE
+            </span>
           </div>
           <h1 className="hero-title">
             Strata<span>Metriq</span>
@@ -722,36 +725,37 @@ function App() {
           </p>
         </div>
         <div className="hero-action-area">
-          <button
-            className="hero-action-button"
-            onClick={handleScan}
-            disabled={scanning}
-          >
-            {scanning ? (
-              <>
-                <span className="spinner-inline">⚙️</span> Analyzing Workspace...
-              </>
-            ) : (
-              <>
-                <span>⚡</span> Run Deep Analysis
-              </>
-            )}
-          </button>
-          <button
-            className="hero-action-button"
-            onClick={handleExportExecutiveReport}
-            title="Download JSON Executive Architecture Audit Report"
-            style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', marginLeft: '8px' }}
-          >
-            <span>📥</span> Export Audit JSON
-          </button>
-          <span className="hero-meta-note">Offline AST Engine • Zero Telemetry</span>
+          <div className="hero-buttons-row">
+            <button
+              className="hero-action-button"
+              onClick={handleScan}
+              disabled={scanning}
+            >
+              {scanning ? (
+                <>
+                  <span className="spinner-inline">⚙️</span> Analyzing Workspace...
+                </>
+              ) : (
+                <>
+                  <span>⚡</span> Run Deep Analysis
+                </>
+              )}
+            </button>
+            <button
+              className="hero-action-button hero-secondary-button"
+              onClick={handleExportExecutiveReport}
+              title="Download JSON Executive Architecture Audit Report"
+            >
+              <span>📥</span> Export Audit JSON
+            </button>
+          </div>
+          <span className="hero-meta-note">🔒 Offline AST Engine • 0% Cloud Exfiltration • Real-Time VS Code Sync</span>
         </div>
       </header>
 
-      <div className="global-filter-toolbar glass-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.8rem 1.25rem', marginBottom: '1.5rem', borderLeft: '4px solid #38bdf8' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '280px' }}>
-          <span style={{ fontSize: '1.1rem' }}>🔍</span>
+      <div className="global-filter-toolbar glass-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.9rem 1.4rem', marginBottom: '1.8rem', borderLeft: '4px solid #38bdf8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '290px' }}>
+          <span style={{ fontSize: '1.15rem' }}>🔍</span>
           <input
             type="text"
             placeholder="Search workspace modules, API routes, or DB tables..."
@@ -759,40 +763,41 @@ function App() {
             onChange={(e) => setGlobalSearchQuery(e.target.value)}
             style={{
               flex: 1,
-              padding: '0.55rem 0.95rem',
-              borderRadius: '8px',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              background: 'rgba(15, 23, 42, 0.75)',
+              padding: '0.65rem 1rem',
+              borderRadius: '10px',
+              border: '1px solid rgba(56, 189, 248, 0.35)',
+              background: 'rgba(15, 23, 42, 0.85)',
               color: '#f8fafc',
-              fontSize: '0.88rem',
-              outline: 'none'
+              fontSize: '0.9rem',
+              outline: 'none',
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
             }}
           />
           {globalSearchQuery && (
-            <button onClick={() => setGlobalSearchQuery('')} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+            <button onClick={() => setGlobalSearchQuery('')} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.15rem' }}>✕</button>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginRight: '4px', fontWeight: 600 }}>Quick Filter:</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.82rem', color: '#94a3b8', marginRight: '4px', fontWeight: 600 }}>Quick Filter:</span>
           {[
-            { id: 'all', label: 'All Modules' },
-            { id: 'highRisks', label: '⚠️ High Risks' },
-            { id: 'openFiles', label: '📂 Open Tabs' },
-            { id: 'circular', label: '🔄 Circular Loops' }
+            { id: 'all', label: `All Modules (${nodes.length})` },
+            { id: 'highRisks', label: `⚠️ High Risks (${nodes.filter((n: any) => (n.productionRisks || []).some((r: any) => r.severity === 'HIGH')).length})` },
+            { id: 'openFiles', label: `📂 Open Tabs (${nodes.filter((n: any) => isFileOpen(n.filePath)).length})` },
+            { id: 'circular', label: `🔄 Circular Loops (${cycles.length})` }
           ].map(f => (
             <button
               key={f.id}
               onClick={() => setQuickFilter(f.id)}
               style={{
-                background: quickFilter === f.id ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                background: quickFilter === f.id ? 'rgba(56, 189, 248, 0.28)' : 'rgba(255, 255, 255, 0.05)',
                 color: quickFilter === f.id ? '#38bdf8' : '#94a3b8',
-                border: quickFilter === f.id ? '1px solid #38bdf8' : '1px solid transparent',
-                padding: '5px 14px',
-                borderRadius: '16px',
-                fontSize: '0.8rem',
+                border: quickFilter === f.id ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.08)',
+                padding: '6px 15px',
+                borderRadius: '18px',
+                fontSize: '0.82rem',
                 cursor: 'pointer',
-                fontWeight: quickFilter === f.id ? 'bold' : 'normal',
-                transition: 'all 0.2s'
+                fontWeight: quickFilter === f.id ? '700' : '500',
+                transition: 'all 0.25s ease'
               }}
             >
               {f.label}
@@ -802,25 +807,61 @@ function App() {
       </div>
 
       <div className="metrics-grid">
-        <div className="metric-card glass-card">
-          <h3>Project Health</h3>
+        <div className="metric-card glass-card health-card">
+          <h3>🩺 Project Health Score</h3>
           <div className="score-ring" style={{ '--score': `${score}%` } as any}>
             <span className="score-text">{scanning ? '...' : `${score}%`}</span>
           </div>
+          <div style={{ textAlign: 'center', marginTop: '1.2rem' }}>
+            <span style={{
+              display: 'inline-block',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              padding: '4px 12px',
+              borderRadius: '20px',
+              background: score >= 80 ? 'rgba(52, 211, 153, 0.15)' : score >= 60 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(248, 113, 113, 0.15)',
+              color: score >= 80 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171',
+              border: `1px solid ${score >= 80 ? 'rgba(52, 211, 153, 0.4)' : score >= 60 ? 'rgba(251, 191, 36, 0.4)' : 'rgba(248, 113, 113, 0.4)'}`
+            }}>
+              {score >= 85 ? '✨ Excellent Architectural Health' : score >= 70 ? '🟢 Good Structural Health' : '⚠️ Action Required'}
+            </span>
+          </div>
         </div>
 
-        <div className="metric-card glass-card">
-          <h3>Complexity Index</h3>
-          <p className="big-stat">{scanning ? '...' : complexity}</p>
-          <p className="stat-label">Dependencies per file</p>
+        <div className="metric-card glass-card complexity-card">
+          <h3>🧠 Complexity Index</h3>
+          <p className="big-stat" style={{ color: '#fbbf24' }}>{scanning ? '...' : complexity}</p>
+          <p className="stat-label">Average dependencies per file</p>
+          <div style={{ marginTop: '1.4rem' }}>
+            <span style={{
+              display: 'inline-block',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              padding: '4px 10px',
+              borderRadius: '16px',
+              background: parseFloat(complexity) < 6 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+              color: parseFloat(complexity) < 6 ? '#38bdf8' : '#fbbf24'
+            }}>
+              {parseFloat(complexity) < 6 ? '🛡️ Low Coupling Density' : '⚡ Moderate Coupling Density'}
+            </span>
+          </div>
         </div>
 
-        <div className="metric-card glass-card">
-          <h3>Graph Overview</h3>
-          <p className="big-stat">{scanning ? '...' : totalModulesCount}</p>
-          <p className="stat-label">Files mapped {totalPackagesCount > 0 ? `(${totalPackagesCount} pkgs)` : ''}</p>
-          <p className="big-stat small-mt">{scanning ? '...' : edges.length}</p>
-          <p className="stat-label">Imports found</p>
+        <div className="metric-card glass-card graph-card">
+          <h3>📊 Graph Overview</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div>
+              <p className="big-stat" style={{ fontSize: '2.4rem' }}>{scanning ? '...' : totalModulesCount}</p>
+              <p className="stat-label">Files mapped {totalPackagesCount > 0 ? `(${totalPackagesCount} pkgs)` : ''}</p>
+            </div>
+            <div>
+              <p className="big-stat" style={{ fontSize: '2.4rem', color: '#c084fc' }}>{scanning ? '...' : edges.length}</p>
+              <p className="stat-label">Imports traced</p>
+            </div>
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px' }}>
+            🌐 Cross-file references & API layers indexed
+          </div>
         </div>
       </div>
 
