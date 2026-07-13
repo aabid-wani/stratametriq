@@ -2,6 +2,7 @@ import * as ts from 'typescript';
 import * as path from 'path';
 import { Node, Edge, Graph } from '@stratametriq/shared';
 import { loadGovernanceRules, evaluateArchitectureGovernance } from './governance';
+import { attachRuntimeTrafficOverlay } from './runtimeOverlay';
 
 export class Scanner {
   private graph: Graph = { nodes: [], edges: [], duplicates: [] };
@@ -464,7 +465,25 @@ export class Scanner {
           }
         }
       }
+    }
 
+    // NestJS / Controller Decorator API Routes: @Get('/users'), @Post('/checkout')
+    if (ts.isDecorator(node) && ts.isCallExpression(node.expression)) {
+      const decName = node.expression.expression.getText(sourceFile);
+      if (['Get', 'Post', 'Put', 'Delete', 'Patch'].includes(decName) && node.expression.arguments.length > 0) {
+        const arg = node.expression.arguments[0];
+        if (ts.isStringLiteral(arg)) {
+          const endpoint = `${decName.toUpperCase()} ${arg.text}`;
+          if (!graphNode.apisCalled!.includes(endpoint)) {
+            graphNode.apisCalled!.push(endpoint);
+          }
+        }
+      }
+    }
+    
+    if (ts.isCallExpression(node)) {
+      const callText = node.expression.getText(sourceFile);
+      const callName = callText.toLowerCase();
       // Databases & SQL queries
       if (callName.startsWith('prisma.') || callName.startsWith('db.') || callName.includes('.query') || callName.includes('.execute') || callName.includes('.find')) {
         let table = 'unknown';
@@ -722,6 +741,7 @@ export class Scanner {
       const rules = loadGovernanceRules(workspaceRoot);
       evaluateArchitectureGovernance(this.graph, rules);
     }
+    attachRuntimeTrafficOverlay(this.graph, workspaceRoot);
 
     return this.graph;
   }

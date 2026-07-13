@@ -88,6 +88,12 @@ rules:
     message: "UI components must go through src/services/ or API endpoints."
 ```
 * **Instant IDE & CLI Enforcement**: Any violation is automatically flagged with red diagnostic squiggles in VS Code, surfaced as a high-severity finding on the dashboard, and reported in headless CLI pipeline runs.
+
+### 9. 📡 OpenTelemetry Runtime Traffic Overlay (Static AST + Live Production Bridge)
+Correlates your static code architecture with real-world production API request volume, latency, and error rates:
+* **⚰️ Dead API Elimination**: Automatically highlights API routes that have received `0 requests in 30 days` so you can safely deprecate dead backend code.
+* **🔥 Production Hotspot Heatmaps**: Surfaces controllers handling heavy traffic volume (`> 8,000 requests/month`) with glowing hotspot badges.
+* **OpenTelemetry Profile Import**: Drop a `stratametriq.otel.json` file in your workspace root to overlay custom production metrics directly onto your AST dependency graph.
 * **Generate Template Config**: Simply run `npx @stratametriq/cli init` to generate starter configuration files automatically.
 
 ---

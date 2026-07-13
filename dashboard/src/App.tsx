@@ -1010,6 +1010,116 @@ function App() {
         )}
       </div>
 
+      {/* Runtime Traffic Overlay (OpenTelemetry / Production Bridge) */}
+      <div className="glass-card" style={{ marginTop: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid #38bdf8' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '8px', color: '#f8fafc', margin: 0 }}>
+              📡 OpenTelemetry Runtime Traffic Overlay
+            </h2>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '4px 0 0 0' }}>
+              Static AST + Live Production Bridge: Detect dead APIs (0 traffic), production latency hotspots, and shadow routes.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', padding: '6px 14px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.85rem' }}>
+              ⚡ OpenTelemetry Bridge: Active
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
+          <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', padding: '12px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Indexed API Controllers</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f8fafc', marginTop: '4px' }}>
+              {nodes.filter((n: any) => n.apisCalled && n.apisCalled.length > 0).length} modules
+            </div>
+          </div>
+          <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', padding: '12px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 600 }}>⚰️ Dead APIs (0 Req / 30d)</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444', marginTop: '4px' }}>
+              {nodes.reduce((sum: number, n: any) => sum + (n.runtimeTelemetry?.endpointsTraffic?.filter((e: any) => e.requestCount30d === 0).length || 0), 0)} endpoints
+            </div>
+          </div>
+          <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '8px', padding: '12px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#fcd34d', textTransform: 'uppercase', fontWeight: 600 }}>🔥 High-Traffic Hotspots</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f59e0b', marginTop: '4px' }}>
+              {nodes.filter((n: any) => n.runtimeTelemetry?.isHotspot).length} controllers
+            </div>
+          </div>
+          <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '8px', padding: '12px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#6ee7b7', textTransform: 'uppercase', fontWeight: 600 }}>Avg Production Latency</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981', marginTop: '4px' }}>
+              {Math.round(nodes.reduce((acc: number, n: any) => acc + (n.runtimeTelemetry?.avgLatencyMs || 0), 0) / Math.max(1, nodes.filter((n: any) => n.runtimeTelemetry).length))} ms
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '1rem' }}>
+          {nodes
+            .filter((n: any) => n.apisCalled && n.apisCalled.length > 0)
+            .map((node: any) => {
+              const telemetry = node.runtimeTelemetry || { requestCount: 0, avgLatencyMs: 0, errorRatePercent: 0, isDeadApi: false, isHotspot: false, endpointsTraffic: [] };
+              return (
+                <div
+                  key={node.id}
+                  onClick={() => handleOpenFile(node.filePath, 1)}
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.8)',
+                    border: telemetry.isDeadApi ? '1px solid rgba(239, 68, 68, 0.5)' : telemetry.isHotspot ? '1px solid rgba(245, 158, 11, 0.5)' : '1px solid rgba(56, 189, 248, 0.3)',
+                    borderRadius: '8px',
+                    padding: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: telemetry.isHotspot ? '0 0 15px rgba(245, 158, 11, 0.15)' : 'none'
+                  }}
+                  title={`Click to open ${node.filePath}`}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#f8fafc', fontSize: '0.95rem' }}>{getFileName(node.filePath)}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{getFolderPath(node.filePath)}</div>
+                    </div>
+                    <div>
+                      {telemetry.isDeadApi ? (
+                        <span style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>
+                          ⚰️ DEAD API
+                        </span>
+                      ) : telemetry.isHotspot ? (
+                        <span style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>
+                          🔥 HOTSPOT
+                        </span>
+                      ) : (
+                        <span style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', border: '1px solid rgba(16,185,129,0.4)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>
+                          ⚡ ACTIVE
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '10px', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '4px' }}>
+                    <div>Requests/30d: <strong style={{ color: '#f8fafc' }}>{telemetry.requestCount.toLocaleString()}</strong></div>
+                    <div>Avg Latency: <strong style={{ color: '#38bdf8' }}>{telemetry.avgLatencyMs}ms</strong></div>
+                    <div>Err Rate: <strong style={{ color: telemetry.errorRatePercent > 1 ? '#ef4444' : '#10b981' }}>{telemetry.errorRatePercent}%</strong></div>
+                  </div>
+
+                  <div style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>
+                    <div style={{ fontWeight: 600, color: '#94a3b8', marginBottom: '4px', fontSize: '0.72rem', textTransform: 'uppercase' }}>Endpoints ({telemetry.endpointsTraffic?.length || 0}):</div>
+                    {telemetry.endpointsTraffic?.map((ep: any, epIdx: number) => (
+                      <div key={epIdx} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontFamily: 'monospace', color: '#38bdf8', fontSize: '0.75rem' }}>{ep.endpoint}</span>
+                        <span style={{ fontSize: '0.72rem', color: ep.requestCount30d === 0 ? '#ef4444' : '#94a3b8' }}>
+                          {ep.requestCount30d === 0 ? '0 req (Dead)' : `${ep.requestCount30d.toLocaleString()} req`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+
       <div className="lists-grid">
         <div className="complex-files-list glass-card">
           <h3>Most Complex Modules</h3>

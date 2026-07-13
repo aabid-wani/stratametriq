@@ -20,6 +20,7 @@ export interface Node {
   apisCalled?: string[];
   dbTables?: string[];
   isOpen?: boolean;
+  runtimeTelemetry?: NodeRuntimeTelemetry;
 }
 
 export interface Edge {
@@ -63,6 +64,23 @@ export interface CustomRuleViolation {
   message: string;
 }
 
+export interface RuntimeRouteTraffic {
+  endpoint: string;
+  requestCount30d: number;
+  avgLatencyMs?: number;
+  errorRatePercent?: number;
+  lastSeen?: string;
+}
+
+export interface NodeRuntimeTelemetry {
+  requestCount: number;
+  avgLatencyMs?: number;
+  errorRatePercent?: number;
+  isDeadApi?: boolean;
+  isHotspot?: boolean;
+  endpointsTraffic?: RuntimeRouteTraffic[];
+}
+
 export interface Graph {
   nodes: Node[];
   edges: Edge[];
@@ -70,6 +88,13 @@ export interface Graph {
   cycles?: string[][]; // Array of circular dependency import paths
   unusedPackages?: UnusedPackage[];
   customRuleViolations?: CustomRuleViolation[];
+  runtimeTrafficOverlay?: {
+    enabled: boolean;
+    totalRequests30d: number;
+    deadApisCount: number;
+    hotspotsCount: number;
+    shadowApis?: string[];
+  };
 }
 
 export interface HealthScore {
