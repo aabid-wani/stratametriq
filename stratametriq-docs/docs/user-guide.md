@@ -622,4 +622,41 @@ While our core backend repository is private, we believe in radical transparency
 * **Public Documentation:** Our complete Docusaurus handbook, real-world architecture examples, and mathematical formulas are publicly accessible.
 * **Feature Requests & Bug Reporting:** We maintain a public community tracker where developers can report bugs, request new heuristics, and vote on upcoming roadmap features.
 
+---
+
+## 9. 📡 OpenTelemetry Runtime Traffic Overlay (Static AST + Live Production Bridge)
+
+Traditional static analysis tools only inspect your source code files on disk—they cannot tell you whether a controller handles 10,000 requests per second or zero requests per year. Conversely, Application Performance Monitoring (APM) tools monitor runtime latency but lack deep AST structural awareness of circular loops and downstream code imports.
+
+StrataMetriq bridges this gap with its native **OpenTelemetry Runtime Traffic Overlay**.
+
+### 🌟 How It Works (Technical Architecture)
+1. **Automatic AST Route Indexing:** During analysis, `@stratametriq/scanner` parses all API route definitions across TypeScript, JavaScript, Python, Java, and Go files (`@app.get(...)`, `router.post(...)`, `@GetMapping(...)`, `r.GET(...)`).
+2. **Production Telemetry Binding (`stratametriq.otel.json`):** The scanner inspects your workspace root for a `stratametriq.otel.json` profile file containing exported request counts, average latencies, and error rates from your OpenTelemetry / APM collector (e.g., Datadog, Dynatrace, Prometheus, or AWS CloudWatch):
+   ```json
+   {
+     "endpoints": {
+       "GET /api/payment/checkout": {
+         "requestCount30d": 124500,
+         "avgLatencyMs": 116,
+         "errorRatePercent": 0.3,
+         "lastSeen": "2 mins ago"
+       },
+       "POST /api/payment/refund": {
+         "requestCount30d": 0,
+         "avgLatencyMs": 0,
+         "errorRatePercent": 0.0,
+         "lastSeen": "Never (0 requests in 30d)"
+       }
+     }
+   }
+   ```
+3. **Automatic Production Simulation Overlay:** If no custom JSON profile is present, StrataMetriq automatically synthesizes a deterministic production overlay based on endpoint hashes so your team can immediately explore dead API detection and production hotspot correlation out of the box.
+
+### 🔥 4 Core Capabilities Unlocked
+* **⚰️ Instant "Dead API" Detection:** Endpoints that exist in your source code but receive `0 requests in 30 days` are automatically badged as **`⚰️ DEAD API`**, giving architects confidence to deprecate dead backend code safely.
+* **🔥 Production Hotspot Heatmaps:** High-volume controllers taking heavy traffic load are highlighted with glowing **`🔥 HOTSPOT`** badges, indicating priority areas for caching or decoupling.
+* **⏱️ Latency & Error Rate Correlation:** Directly overlays average production latency (`ms`) and error rates (`%`) onto the module's AST card.
+* **⚡ 1-Click Editor Jumping:** Click any route inside the Runtime Traffic Cockpit card to open the exact controller file inside VS Code.
+
 
