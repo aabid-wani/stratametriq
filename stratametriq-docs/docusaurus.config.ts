@@ -94,7 +94,7 @@ const config: Config = {
               to: '/docs/architecture',
             },
             {
-              label: 'User Guide & 9-Point Audit',
+              label: 'User Guide & 13-Point Audit',
               to: '/docs/user-guide',
             },
           ],

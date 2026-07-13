@@ -31,7 +31,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: '9-Point Safety Audit',
+    title: '13-Point Safety Audit',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
