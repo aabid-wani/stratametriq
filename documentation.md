@@ -22,10 +22,8 @@ This comprehensive document serves both **end-users** (developers utilizing the 
    - [4.5 Duplicate Code & Circular Dependency Detection](#45-duplicate-code--circular-dependency-detection)
    - [4.6 Architectural Health & Complexity Metrics](#46-architectural-health--complexity-metrics)
 5. [Interactive Controls & UI Reference](#5-interactive-controls--ui-reference)
-6. [Developer Guide & Monorepo Build Instructions](#6-developer-guide--monorepo-build-instructions)
-7. [Publishing & Marketplace Deployment Guide](#7-publishing--marketplace-deployment-guide)
-8. [Troubleshooting & Frequently Asked Questions (FAQ)](#8-troubleshooting--frequently-asked-questions-faq)
-9. [Repository & Package File Reference](#9-repository--package-file-reference)
+6. [Troubleshooting & Frequently Asked Questions (FAQ)](#6-troubleshooting--frequently-asked-questions-faq)
+7. [Repository & Package File Reference](#7-repository--package-file-reference)
 
 ---
 
@@ -779,68 +777,7 @@ While our core backend repository is private, we believe in radical transparency
 
 ---
 
-## 6. Developer Guide & Monorepo Build Instructions
-
-If you are contributing to the StrataMetriq codebase or compiling the extension from source, follow these instructions:
-
-### Prerequisites
-* **Node.js:** v18.x or v20.x recommended.
-* **npm:** v9.x or later.
-* **Visual Studio Code:** v1.80.0 or higher.
-
-### Step 1: Install Workspace Dependencies
-Run the install command from the root repository directory to link all monorepo workspaces:
-```bash
-npm install
-```
-
-### Step 2: Compile All Workspaces
-To compile the TypeScript source code across `@stratametriq/shared`, `@stratametriq/scanner`, `@stratametriq/ai`, and `@stratametriq/runtime`, run:
-```bash
-npm run build
-```
-
-### Step 3: Build the React Dashboard Webview
-The React UI must be compiled and bundled into a single inline HTML/JS/CSS package so that it can be loaded inside VS Code webviews without external server dependencies:
-```bash
-cd dashboard
-npm run build
-cd ..
-```
-*Note: This utilizes `vite-plugin-singlefile` to output a self-contained bundle into `dashboard/dist/index.html`.*
-
-### Step 4: Bundle and Package the VS Code Extension (VSIX)
-To package the compiled extension into a distributable `.vsix` file using `esbuild` and `@vscode/vsce`:
-```bash
-cd extension
-npm run package
-npx @vscode/vsce package
-cd ..
-```
-This generates the final installable artifact: **`stratametriq-extension-1.3.0.vsix`**.
-
----
-
-## 7. Publishing & Marketplace Deployment Guide
-
-When publishing StrataMetriq to the public **Visual Studio Code Marketplace** or an internal enterprise marketplace, ensure the following requirements are met:
-
-1. **Extension Icon:** An icon file (`icon.png`, 128x128 PNG format) is included in the root of the `extension/` directory and referenced in `extension/package.json` under `"icon": "icon.png"`.
-2. **Publisher Account:**
-   * Create a publisher profile on the [Visual Studio Code Marketplace Management Portal](https://marketplace.visualstudio.com/manage).
-   * Ensure your `"publisher"` ID in `extension/package.json` matches your marketplace publisher ID (`"stratametriq"`).
-3. **Personal Access Token (PAT):**
-   * Generate an Azure DevOps Personal Access Token with **Marketplace (Publish)** scopes.
-4. **Login & Publish via CLI:**
-   ```bash
-   cd extension
-   npx @vscode/vsce login stratametriq
-   npx @vscode/vsce publish
-   ```
-
----
-
-## 8. Troubleshooting & Frequently Asked Questions (FAQ)
+## 6. Troubleshooting & Frequently Asked Questions (FAQ)
 
 ### 🔒 Enterprise Security & Privacy Guarantee
 
@@ -889,7 +826,7 @@ Our scanner utilizes contextual AST evaluation rather than simple regex matching
 
 ---
 
-## 9. Repository & Package File Reference
+## 7. Repository & Package File Reference
 
 * **Workspace Root Config:** [`package.json`](file:///d:/codeVision/package.json)
 * **Extension Package Manifest:** [`extension/package.json`](file:///d:/codeVision/extension/package.json)
