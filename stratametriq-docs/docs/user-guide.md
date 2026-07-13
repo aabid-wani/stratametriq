@@ -438,7 +438,10 @@ Answer the most critical engineering question before refactoring: *"If I modify 
   * 📊 **Affected Reports & Views:** UI dashboards and frontend views reliant on data streams originating here.
 
 **💡 Real-World Architectural Example:**
-If you modify `app.jsx`, StrataMetriq calculates its downstream blast radius by tracing every React child component (`<Main />`, `<Link />`, `<Container />`, `<Card />`, `<ActionColumn />`) that consumes its context or props.
+If you inspect `Main.jsx`, StrataMetriq calculates its downstream blast radius with explicit educational explanations ("Why & How Are These Affected?"):
+* **`34` Affected Files (`31 direct, 3 transitive`):** Files directly importing or transitively relying on `Main.jsx`.
+* **`2` Affected APIs (`GET /products`, `GET /vendors`):** API routes where this module participates in the server request lifecycle.
+* **`119` Affected UI Components (`<Sidebar />`, `<Header />`, `<Button />`, `<Main />`):** React components rendering or invoking logic from this module (`HIGH` Impact Risk Level).
 
 **📸 Interactive Dashboard Preview:**
 When inspecting a core module in your workspace, the dashboard gives you an immediate blast radius breakdown:
