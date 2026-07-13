@@ -1055,7 +1055,7 @@ function App() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '1rem' }}>
+        <div className="runtime-overlay-grid custom-scrollbar" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '1rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '6px' }}>
           {nodes
             .filter((n: any) => n.apisCalled && n.apisCalled.length > 0)
             .map((node: any) => {
