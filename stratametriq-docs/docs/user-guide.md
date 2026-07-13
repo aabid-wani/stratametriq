@@ -519,10 +519,10 @@ Monitor overall repository maintainability through three core high-level health 
 * **Graph Overview:** Displays total workspace files mapped and total cross-module import edges discovered.
 
 **💡 Real-World Metric Breakdown Example:**
-When StrataMetriq scans a medium-sized full-stack repository, it computes concrete metrics to give you an instant architectural pulse:
-* **`91%` Project Health:** Indicates an exceptionally clean codebase with minimal circular loops or critical pre-deployment risks.
-* **`4.33` Complexity Index:** Means each module imports an average of ~4.3 dependencies—a healthy ratio indicating well-decoupled, modular components (indices > 10 warn of monolithic "god files").
-* **`609` Files Mapped & `2639` Imports Found:** Shows the exact scale of the AST structural dependency graph constructed by the scanner.
+When StrataMetriq scans your full-stack repository, it computes concrete metrics to give you an instant architectural pulse:
+* **`83%` Project Health:** Indicates good structural health with minimal circular loops or critical pre-deployment risks (`Good Structural Health`).
+* **`5.51` Complexity Index:** Means each module imports an average of ~5.5 dependencies (`Low Coupling Density`)—a healthy ratio indicating well-decoupled, modular components (indices > 10 warn of monolithic "god files").
+* **`88` Files Mapped & `485` Imports Traced:** Shows the exact scale of the AST structural dependency graph constructed by the scanner (`84 pkgs`).
 
 **📐 How the Health Score is Calculated (Exact Mathematical Formulas):**
 StrataMetriq calculates architectural health using transparent, deterministic formulas evaluated directly from your AST dependency graph:
