@@ -72,11 +72,6 @@ const config: Config = {
           label: 'VS Code Marketplace',
           position: 'right',
         },
-        {
-          href: 'https://github.com/aabid-wani/stratametriq',
-          label: 'GitHub',
-          position: 'right',
-        },
       ],
     },
     footer: {
@@ -109,15 +104,6 @@ const config: Config = {
             {
               label: 'TypeScript Compiler API',
               href: 'https://github.com/microsoft/TypeScript',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'GitHub Repository',
-              href: 'https://github.com/aabid-wani/stratametriq',
             },
           ],
         },

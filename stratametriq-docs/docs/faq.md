@@ -38,7 +38,6 @@ We provide two ironclad guarantees regarding the safety of your computer and you
 1. **100% Virus-Free & Official Marketplace Verification:**
    * When downloaded from the official **Microsoft Visual Studio Code Marketplace**, our `.vsix` package undergoes rigorous automated virus scanning, malware detection, and integrity verification by Microsoft before publication.
    * StrataMetriq contains **zero executable binaries (.exe, .dll, .bat)**, no cryptocurrency miners, no telemetry trackers, and no obfuscated scripts. It is built purely with standard, sandboxed Node.js and TypeScript code executing inside VS Code's secure extension host process.
-   * You can inspect 100% of our open-source codebase on GitHub to verify our clean architectural implementation.
 2. **100% Read-Only Safety (Will Never Modify or Damage Your Code):**
    * StrataMetriq operates in a **strict read-only analysis mode**.
    * When you click **Run Deep Analysis**, our parser reads your `.ts`, `.js`, `.tsx`, and `.jsx` files into computer memory to build an Abstract Syntax Tree (AST). It **never modifies, overwrites, formats, deletes, or mutates** a single byte of your existing source files.
