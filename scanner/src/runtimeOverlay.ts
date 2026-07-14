@@ -38,6 +38,7 @@ export function attachRuntimeTrafficOverlay(graph: Graph, workspaceRoot?: string
   const shadowApis: string[] = [];
 
   // Iterate over nodes and attach runtimeTelemetry for any node that exposes or calls APIs
+  
   for (const node of graph.nodes) {
     if (node.apisCalled && node.apisCalled.length > 0) {
       const endpointsTraffic: RuntimeRouteTraffic[] = [];
