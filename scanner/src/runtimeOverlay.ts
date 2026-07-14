@@ -61,8 +61,10 @@ export function attachRuntimeTrafficOverlay(graph: Graph, workspaceRoot?: string
         } else {
           // Deterministic production simulation based on route hash
           const hash = apiStr.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-          // Make roughly 25% of routes "Dead APIs" (0 requests) to highlight dead code cleanup
-          if ((hash + idx) % 4 === 0) {
+          const lowerApi = apiStr.toLowerCase();
+          const isExplicitlyLegacy = lowerApi.includes('deprecated') || lowerApi.includes('legacy') || lowerApi.includes('unused') || lowerApi.includes('old') || lowerApi.includes('test_') || lowerApi.includes('mock');
+
+          if (isExplicitlyLegacy) {
             reqCount = 0;
             latency = 0;
             errRate = 0;

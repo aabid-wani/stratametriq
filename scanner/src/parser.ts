@@ -452,12 +452,16 @@ export class Scanner {
         }
       }
 
-      // Express / Next route definitions: app.get('/users', ...), router.post(...)
-      if (callName.includes('.get') || callName.includes('.post') || callName.includes('.put') || callName.includes('.delete')) {
+      // Express / Next / Client route calls: app.get('/users', ...), api.getProduct('/products')
+      if (callName.includes('.get') || callName.includes('.post') || callName.includes('.put') || callName.includes('.delete') || callName.includes('.patch')) {
         if (node.arguments.length > 0 && ts.isStringLiteral(node.arguments[0])) {
           const routePath = node.arguments[0].text;
           if (routePath.startsWith('/')) {
-            const method = callName.split('.').pop()!.toUpperCase();
+            let method = 'GET';
+            if (callName.includes('.post') || callName.includes('post')) method = 'POST';
+            else if (callName.includes('.put') || callName.includes('put')) method = 'PUT';
+            else if (callName.includes('.delete') || callName.includes('delete')) method = 'DELETE';
+            else if (callName.includes('.patch') || callName.includes('patch')) method = 'PATCH';
             const endpoint = `${method} ${routePath}`;
             if (!graphNode.apisCalled!.includes(endpoint)) {
               graphNode.apisCalled!.push(endpoint);
